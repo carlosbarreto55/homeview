@@ -3,7 +3,8 @@
 
 Answers every request without credentials with a Digest challenge like the
 DVR's (no qop), and checks the Authorization header of the next request
-against USER/PASSWORD below. Prints MATCH or MISMATCH, then answers 404.
+against USER/PASSWORD below. Prints MATCH or MISMATCH, then answers 404 on a
+match (like a channel without a camera) or 401 on a mismatch.
 
 Usage: Scripts/fake-rtsp-digest.py [port]   (default 8554)
 """
@@ -45,7 +46,7 @@ class Handler(socketserver.StreamRequestHandler):
             expected = md5(f"{md5(f'{USER}:{REALM}:{PASSWORD}')}:{NONCE}:{md5(method + ':' + fields.get('uri', ''))}")
             result = "MATCH" if fields.get("response") == expected and fields.get("username") == USER else "MISMATCH"
             print(f"{method}: username={fields.get('username')!r} {result}", flush=True)
-            self.reply("404 Not Found", cseq)
+            self.reply("404 Not Found" if result == "MATCH" else "401 Unauthorized", cseq)
             return
 
     def reply(self, status, cseq, *headers):

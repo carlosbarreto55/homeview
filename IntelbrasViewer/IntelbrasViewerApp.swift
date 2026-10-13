@@ -26,6 +26,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             window.makeKeyAndOrderFront(nil)
             spikeWindow = window
         }
+        // Spike only: `-spikeProbe YES` checks the spike login with `RTSPProbe` once.
+        if UserDefaults.standard.bool(forKey: "spikeProbe") {
+            Task {
+                let login = SpikeCredentials.load()
+                let started = ContinuousClock.now
+                let result = await RTSPProbe().check(host: SpikeCredentials.host, port: SpikeCredentials.port,
+                                                     user: login?.user ?? "", password: login?.password ?? "")
+                Logger.panel.info("""
+                    spike probe \(SpikeCredentials.host, privacy: .public):\(SpikeCredentials.port) \
+                    -> \(String(describing: result), privacy: .public) \
+                    in \((ContinuousClock.now - started).formatted(.units(allowed: [.milliseconds])), privacy: .public)
+                    """)
+            }
+        }
         // Spike only: `-spikeTogglePanel N` presses the menu bar button N
         // times, 6 s apart, opening and closing the real panel.
         let toggles = UserDefaults.standard.integer(forKey: "spikeTogglePanel")
