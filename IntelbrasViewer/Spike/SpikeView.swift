@@ -15,8 +15,15 @@ final class SpikeModel {
         channel = max(1, defaults.integer(forKey: "spikeChannel"))
         subtype = defaults.object(forKey: "spikeSubtype") == nil ? 1 : defaults.integer(forKey: "spikeSubtype")
         player.onStateChange = { [weak self] state in
-            self?.state = state
+            guard let self else { return }
+            self.state = state
             Logger.player.info("state \(String(describing: state), privacy: .public)")
+            if state == .playing, let path = SpikeFrameDump.basePath {
+                Task { @MainActor in
+                    try? await Task.sleep(for: .seconds(3))
+                    await SpikeFrameDump.dump(from: self.player, to: path)
+                }
+            }
         }
     }
 

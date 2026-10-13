@@ -46,3 +46,23 @@ Things learned on the way:
   read the Keychain on the main thread at launch in a way that can freeze the
   panel, and expect this dialog during development. The spike passes the
   password through the environment instead (`Scripts/spike-run.sh`).
+
+## 2.2 Channel 1 main stream stretched to 16:9 (2026-10-13)
+
+Result: **works, and 16:9 is the right shape.**
+
+- Main stream (`subtype=0`): **HEVC Main, yuv420p, 960x1080, 30 fps**, decoded
+  by VideoToolbox. About 6% CPU and 120 MB RSS with this one stream.
+- `contentMode = .scaleToFill` on the KSPlayer view sets the display layer's
+  video gravity to `.resize`, so the picture fills the 16:9 frame exactly.
+- Checked by saving a frame (`-spikeFrameDump`) as the stream's pixels and
+  redrawn at 1920x1080: in the 16:9 image wheels are round and the DVR's
+  on-screen text ("intelbras", "Canal1") has normal proportions; the raw
+  960x1080 image is visibly squeezed. The DVR does not need any per-channel
+  aspect setting. A side-by-side look against VLC by eye is left for the
+  manual checklist (7.1), since the spike ran without access to the screen.
+- VideoToolbox logs "hardware accelerator failed to decode picture" about 40
+  times in the first seconds (before the first keyframe), then none.
+- The DVR's on-screen clock was about 20 minutes ahead of the Mac. Snapshot
+  file names use the Mac's clock, so they may not match the time burned into
+  the picture.
