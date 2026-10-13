@@ -46,7 +46,7 @@ Findings from each spike subtask are written to `docs/spike-notes.md` in the sam
 
 ## 6. Snapshots
 
-- [ ] 6.1 `SnapshotFileName` (sanitized camera name + `yyyy-MM-dd HH.mm.ss` + `.jpg`) and 16:9 output sizing at the stream's height; tests including "Sala/Cozinha" and 960x1080 → 1920x1080 — commit: `feat(snapshots): name and size snapshot files`
+- [x] 6.1 `SnapshotFileName` (sanitized camera name + `yyyy-MM-dd HH.mm.ss` + `.jpg`) and 16:9 output sizing at the stream's height; tests including "Sala/Cozinha" and 960x1080 → 1920x1080 — commit: `feat(snapshots): name and size snapshot files`
 - [ ] 6.2 `SnapshotWriter`: frame from the player, redraw at 16:9, JPEG 0.9 via ImageIO into `~/Pictures/Intelbras Viewer` (created if missing); error path returns a failure — commit: `feat(snapshots): write snapshots as JPEG`
 - [ ] 6.3 Snapshot button in the enlarged header (disabled until the first frame), "Foto salva" and "Não foi possível salvar a foto" messages, folder button opens Finder — commit: `feat(ui): add snapshot button and folder shortcut`
 
