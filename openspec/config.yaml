@@ -1,0 +1,32 @@
+schema: spec-driven
+
+context: |
+  Product: a macOS menu bar app (SwiftUI MenuBarExtra, .window style, no Dock icon)
+  to watch the home cameras of an Intelbras DVR without the official Intelbras apps.
+  The user is Brazilian: UI copy is in Portuguese (pt-BR).
+
+  Tech stack: Swift, SwiftUI, macOS only. RTSP playback through an FFmpeg-based
+  player (KSPlayer) or VLCKit, decided in the first change's design. AVPlayer
+  cannot play RTSP. Credentials live in the macOS Keychain, never in code or files.
+  We use conventional commits.
+
+  Domain (verified against the real device):
+  - DVR: Intelbras MHDX 1108-C (Dahua OEM), 8 channels, firmware 4.000 (2025-06),
+    on the LAN at 192.168.1.2. Ports: 554 RTSP, 80 HTTP, 37777 proprietary.
+  - Live stream: rtsp://HOST:554/cam/realmonitor?channel=N&subtype=S
+    (N = 1..8; S = 0 main stream, 1 substream). Digest auth.
+  - Main streams are H.265. Channels 1-7 are 960x1080 ("1080N", non-square pixels):
+    they must be displayed at 16:9. Channel 8 is 1280x720. 15-30 fps.
+  - Default channel names are Canal1..Canal8; users rename them inside the app.
+  - The app uses a restricted DVR user (live view + playback only). That user gets
+    "Invalid Authority!" on magicBox.cgi / configManager.cgi, so the app must not
+    depend on config CGI endpoints.
+  - Remote access is out of scope for the app itself (planned via Tailscale);
+    never suggest port-forwarding the DVR.
+
+rules:
+  tasks:
+    - 'Each subtask is exactly one commit. End every subtask line with its Conventional Commits message, as "— commit: `type(scope): summary`".'
+    - "The commit holds the subtask's code, its tests, and tasks.md with that box ticked; every commit builds and passes the unit tests."
+    - "Problems found later get their own `fix(scope): …` commit; never amend an earlier subtask's commit."
+    - "Subtasks that only investigate or verify still produce a commit, by writing their findings or results to a file."
