@@ -2,7 +2,7 @@ Each subtask is exactly one commit, using Conventional Commits with the message 
 
 ## 1. Project setup
 
-- [ ] 1.1 Write `project.yml` (XcodeGen): app target `IntelbrasViewer` (macOS 14, bundle id `com.carloseduardo.IntelbrasViewer`, display name "Intelbras Viewer", `LSUIElement = YES`, `NSLocalNetworkUsageDescription` in pt-BR, no sandbox, sign to run locally), test target `IntelbrasViewerTests`, KSPlayer as a SwiftPM dependency — commit: `build: add XcodeGen project spec with KSPlayer dependency`
+- [x] 1.1 Write `project.yml` (XcodeGen): app target `IntelbrasViewer` (macOS 14, bundle id `com.carloseduardo.IntelbrasViewer`, display name "Intelbras Viewer", `LSUIElement = YES`, `NSLocalNetworkUsageDescription` in pt-BR, no sandbox, sign to run locally), test target `IntelbrasViewerTests`, KSPlayer as a SwiftPM dependency — commit: `build: add XcodeGen project spec with KSPlayer dependency`
 - [ ] 1.2 Add `.gitignore` (generated `.xcodeproj`, `DerivedData`, `.build`, `xcuserdata`) and a `Makefile` with `generate`, `build`, `test` and `run` using `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer` — commit: `build: add Makefile and gitignore for command-line builds`
 - [ ] 1.3 Minimal `MenuBarExtra` app (camera SF Symbol, `.window` style, placeholder panel) that builds, launches with no Dock icon, and an empty test that passes — commit: `feat(app): add menu bar app shell with placeholder panel`
 

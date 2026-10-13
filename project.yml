@@ -1,0 +1,68 @@
+name: IntelbrasViewer
+
+options:
+  bundleIdPrefix: com.carloseduardo
+  deploymentTarget:
+    macOS: "14.0"
+  createIntermediateGroups: true
+
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    # Sign to run locally: ad-hoc signature, no team, not sandboxed.
+    CODE_SIGN_STYLE: Manual
+    CODE_SIGN_IDENTITY: "-"
+    DEVELOPMENT_TEAM: ""
+    ENABLE_APP_SANDBOX: NO
+    ENABLE_HARDENED_RUNTIME: NO
+
+packages:
+  KSPlayer:
+    url: https://github.com/kingslay/KSPlayer.git
+    exactVersion: 2.3.4
+
+targets:
+  IntelbrasViewer:
+    type: application
+    platform: macOS
+    sources:
+      - path: IntelbrasViewer
+    dependencies:
+      - package: KSPlayer
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.carloseduardo.IntelbrasViewer
+        PRODUCT_NAME: IntelbrasViewer
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: Intelbras Viewer
+        INFOPLIST_KEY_LSUIElement: YES
+        INFOPLIST_KEY_NSLocalNetworkUsageDescription: O Intelbras Viewer precisa acessar a rede local para mostrar as câmeras do seu DVR.
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.utilities
+
+  IntelbrasViewerTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: IntelbrasViewerTests
+    dependencies:
+      - target: IntelbrasViewer
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.carloseduardo.IntelbrasViewerTests
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/IntelbrasViewer.app/Contents/MacOS/IntelbrasViewer"
+        BUNDLE_LOADER: "$(TEST_HOST)"
+
+schemes:
+  IntelbrasViewer:
+    build:
+      targets:
+        IntelbrasViewer: all
+        IntelbrasViewerTests: [test]
+    test:
+      targets:
+        - IntelbrasViewerTests
+    run:
+      config: Debug
