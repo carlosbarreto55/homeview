@@ -88,3 +88,29 @@ Result: **works.**
 - At 352x240 the substream is soft in a ~282x159 pt tile on a Retina screen
   (about 564x318 px). Acceptable for a preview; the enlarged view uses the
   main stream.
+
+## 2.4 Percent-encoded credentials (2026-10-13)
+
+Result: **FFmpeg decodes percent-encoded user and password correctly.**
+
+Checked against a fake RTSP server instead of a temporary DVR user, so no
+user had to be created on the DVR: `Scripts/fake-rtsp-digest.py` answers like
+the DVR (Digest, no `qop`) and checks the response FFmpeg computes.
+
+- User `tester`, password `a@b:c/d#e`, sent as
+  `rtsp://tester:a%40b%3Ac%2Fd%23e@127.0.0.1:8554/...` (everything except
+  RFC 3986 unreserved characters percent-encoded): the server reports
+  **MATCH**, so FFmpeg used the decoded password in the Digest hash.
+- Control: the same with `a@b:c/d#X` reports **MISMATCH**.
+- On the real DVR, the `macApp` password itself contains characters outside
+  the unreserved set and plays when sent percent-encoded the same way (2.1).
+
+So the fallback in design.md (passing credentials as player options, or
+forbidding `@ : / # ?` in passwords) is not needed.
+
+Run it again with:
+
+    Scripts/fake-rtsp-digest.py 8554 &
+    SPIKE_DVR_HOST=127.0.0.1 SPIKE_DVR_PORT=8554 SPIKE_DVR_USER=tester \
+      SPIKE_DVR_PASSWORD='a@b:c/d#e' \
+      DerivedData/Build/Products/Debug/IntelbrasViewer.app/Contents/MacOS/IntelbrasViewer -spikeWindow YES

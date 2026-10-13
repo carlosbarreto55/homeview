@@ -12,8 +12,15 @@ import Security
 /// Replaced by `DVRSettingsStore` and `StreamURL` later.
 enum SpikeCredentials {
     static let service = "com.carloseduardo.IntelbrasViewer.spike"
-    static let host = "192.168.1.2"
-    static let port = 554
+    /// `SPIKE_DVR_HOST` / `SPIKE_DVR_PORT` point the spike at another server
+    /// (used by `Scripts/fake-rtsp-digest.py`).
+    static var host: String {
+        ProcessInfo.processInfo.environment["SPIKE_DVR_HOST"] ?? "192.168.1.2"
+    }
+
+    static var port: Int {
+        ProcessInfo.processInfo.environment["SPIKE_DVR_PORT"].flatMap(Int.init) ?? 554
+    }
 
     static func load() -> (user: String, password: String)? {
         let environment = ProcessInfo.processInfo.environment
