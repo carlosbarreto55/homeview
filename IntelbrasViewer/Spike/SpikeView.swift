@@ -2,7 +2,6 @@ import SwiftUI
 import os
 
 /// Spike only: plays one camera at 16:9 to validate the player on the real DVR.
-/// Launch arguments: `-spikeChannel N` (default 1), `-spikeSubtype S` (default 1).
 @MainActor
 @Observable
 final class SpikeModel {
@@ -11,17 +10,17 @@ final class SpikeModel {
     let player: CameraPlayer = KSCameraPlayer()
     private(set) var state: CameraPlayerState = .idle
 
-    init(defaults: UserDefaults = .standard) {
-        channel = max(1, defaults.integer(forKey: "spikeChannel"))
-        subtype = defaults.object(forKey: "spikeSubtype") == nil ? 1 : defaults.integer(forKey: "spikeSubtype")
+    init(channel: Int, subtype: Int) {
+        self.channel = channel
+        self.subtype = subtype
         player.onStateChange = { [weak self] state in
             guard let self else { return }
             self.state = state
-            Logger.player.info("state \(String(describing: state), privacy: .public)")
+            Logger.player.info("state ch\(channel) \(String(describing: state), privacy: .public)")
             if state == .playing, let path = SpikeFrameDump.basePath {
                 Task { @MainActor in
                     try? await Task.sleep(for: .seconds(3))
-                    await SpikeFrameDump.dump(from: self.player, to: path)
+                    await SpikeFrameDump.dump(from: self.player, to: "\(path)-ch\(channel)")
                 }
             }
         }
@@ -41,11 +40,38 @@ final class SpikeModel {
     }
 }
 
+/// Launch arguments: `-spikeAll YES` plays the 8 substreams in a grid;
+/// otherwise `-spikeChannel N` (default 1) and `-spikeSubtype S` (default 1).
 struct SpikeView: View {
-    @State private var model = SpikeModel()
+    @State private var models: [SpikeModel] = {
+        let defaults = UserDefaults.standard
+        if defaults.bool(forKey: "spikeAll") {
+            return (1...8).map { SpikeModel(channel: $0, subtype: 1) }
+        }
+        let channel = max(1, defaults.integer(forKey: "spikeChannel"))
+        let subtype = defaults.object(forKey: "spikeSubtype") == nil ? 1 : defaults.integer(forKey: "spikeSubtype")
+        return [SpikeModel(channel: channel, subtype: subtype)]
+    }()
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        ScrollView {
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: models.count > 1 ? 2 : 1), spacing: 12) {
+                ForEach(models, id: \.channel) { model in
+                    SpikeTile(model: model)
+                }
+            }
+            .padding(12)
+        }
+        .frame(width: 600, height: models.count > 1 ? 540 : 400)
+        .onAppear { models.forEach { $0.start() } }
+    }
+}
+
+private struct SpikeTile: View {
+    let model: SpikeModel
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
             Text("Canal \(model.channel) · subtype \(model.subtype)")
                 .font(.headline)
             PlayerView(player: model.player)
@@ -54,9 +80,7 @@ struct SpikeView: View {
             Text(String(describing: model.state))
                 .font(.caption)
                 .foregroundStyle(.secondary)
+                .lineLimit(1)
         }
-        .padding(12)
-        .frame(width: 600)
-        .onAppear { model.start() }
     }
 }

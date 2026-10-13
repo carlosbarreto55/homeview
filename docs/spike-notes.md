@@ -66,3 +66,25 @@ Result: **works, and 16:9 is the right shape.**
 - The DVR's on-screen clock was about 20 minutes ahead of the Mac. Snapshot
   file names use the Mac's clock, so they may not match the time burned into
   the picture.
+
+## 2.3 All eight substreams at once (2026-10-13)
+
+Result: **works.**
+
+- The DVR accepted 8 simultaneous RTSP sessions from the restricted user
+  (8 established TCP connections to port 554, all 8 players reached
+  `playing`). No limit was hit, so the grid does not need to throttle.
+- Every substream is H.264 352x240 at 7 fps (channel 8 too, although its main
+  stream is 1280x720).
+- Whole app with 8 substreams: about 8% CPU (`ps`, sampled every 2 s for 10 s,
+  6.6–9.5%) and 125 MB RSS. Cheap enough to leave the grid running while the
+  panel is open.
+- First frame for all 8 within about 4 s of start.
+- Channels 7 and 8 stream a black picture with only the DVR's text overlay
+  (logo, clock, "Canal7"/"Canal8"). The DVR still serves the stream, so the
+  player reports `playing`, not a failure: "Sem sinal" will not appear for a
+  channel without a camera. Hiding the channel ("Mostrar" off) is the way to
+  remove it.
+- At 352x240 the substream is soft in a ~282x159 pt tile on a Retina screen
+  (about 564x318 px). Acceptable for a preview; the enlarged view uses the
+  main stream.
