@@ -52,6 +52,6 @@ Findings from each spike subtask are written to `docs/spike-notes.md` in the sam
 
 ## 7. Verification on the real DVR
 
-- [ ] 7.1 Write `docs/verificacao-manual.md`: a checklist with each scenario from the five specs that needs the DVR or the menu bar (setup with right/wrong password and wrong address, grid of 8, hide channels, rename and restart, enlarge and back, unplug a camera and plug it back, refresh, close the panel and confirm no RTSP connections remain with `lsof -i :554`, reopen on an enlarged camera, snapshot of a renamed camera, open at login, quit) — commit: `docs: add manual verification checklist`
+- [x] 7.1 Write `docs/verificacao-manual.md`: a checklist with each scenario from the five specs that needs the DVR or the menu bar (setup with right/wrong password and wrong address, grid of 8, hide channels, rename and restart, enlarge and back, unplug a camera and plug it back, refresh, close the panel and confirm no RTSP connections remain with `lsof -i :554`, reopen on an enlarged camera, snapshot of a renamed camera, open at login, quit) — commit: `docs: add manual verification checklist`
 - [ ] 7.2 Run `make test` and the checklist against the DVR, and record the date and result of each item in the checklist; each problem found gets its own `fix(<scope>): …` commit before this one — commit: `docs: record manual verification results`
 - [ ] 7.3 Write a README (pt-BR) with what the app does, how to build and run it, how to create the restricted DVR user, and a screenshot — commit: `docs: add README in Portuguese`
