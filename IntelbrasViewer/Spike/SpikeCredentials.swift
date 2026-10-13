@@ -9,7 +9,7 @@ import Security
 /// and passed in by `Scripts/spike-run.sh`. Reading that item from the app
 /// itself makes macOS ask for permission (the item's partition list only
 /// trusts Apple tools), so the script reads it with `security` instead.
-/// Replaced by `DVRSettingsStore` and `StreamURL` later.
+/// Replaced by `DVRSettingsStore` later.
 enum SpikeCredentials {
     static let service = "com.carloseduardo.IntelbrasViewer.spike"
     /// `SPIKE_DVR_HOST` / `SPIKE_DVR_PORT` point the spike at another server
@@ -50,11 +50,7 @@ enum SpikeCredentials {
 
     static func url(channel: Int, subtype: Int) -> URL? {
         guard let login = load() else { return nil }
-        let allowed = CharacterSet(charactersIn:
-            "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~")
-        guard let user = login.user.addingPercentEncoding(withAllowedCharacters: allowed),
-              let password = login.password.addingPercentEncoding(withAllowedCharacters: allowed)
-        else { return nil }
-        return URL(string: "rtsp://\(user):\(password)@\(host):\(port)/cam/realmonitor?channel=\(channel)&subtype=\(subtype)")
+        return StreamURL(host: host, port: port, user: login.user, password: login.password,
+                         channel: channel, quality: subtype == 0 ? .main : .substream).url
     }
 }
