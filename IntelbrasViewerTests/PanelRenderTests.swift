@@ -93,6 +93,12 @@ final class PanelRenderTests: XCTestCase {
         render(model, "wrong-credentials")
     }
 
+    func testRenderRenameCameras() async throws {
+        let model = try await makeModel()
+        model.openRenameCameras()
+        render(model, "rename")
+    }
+
     func testRenderSetup() async throws {
         let model = try await makeModel(configured: false)
         render(model, "setup")

@@ -193,6 +193,14 @@ final class AppModel {
         startStreams(verify: false)
     }
 
+    /// "Concluído" in "Renomear câmeras": saves the names and visibility and
+    /// shows the grid.
+    func finishRenaming(_ edited: [Camera]) {
+        cameras.apply(edited)
+        route = .grid
+        startStreams(verify: false)
+    }
+
     /// The header's refresh button: every stream restarts now, with the shortest wait.
     func refresh() {
         guard route.hasStreams else { return }

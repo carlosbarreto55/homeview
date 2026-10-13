@@ -198,6 +198,31 @@ final class AppModelTests: XCTestCase {
         XCTAssertEqual(model.sessions.map(\.channel), [3])
     }
 
+    func testDoneRenamingAppliesAndShowsTheGrid() async throws {
+        let model = try makeModel()
+        await open(model)
+        model.openCamera(channel: 5)
+        model.openRenameCameras()
+        var draft = model.cameras.cameras
+        draft[2].name = "Garagem"
+        for index in 4..<8 { draft[index].isVisible = false }
+        model.finishRenaming(draft)
+        XCTAssertEqual(model.route, .grid)
+        XCTAssertEqual(model.cameras.camera(channel: 3)?.name, "Garagem")
+        XCTAssertEqual(model.sessions.map(\.channel), [1, 2, 3, 4])
+        XCTAssertEqual(CameraListStore(defaults: defaults).camera(channel: 3)?.name, "Garagem")
+    }
+
+    func testCancelRenamingKeepsTheNames() async throws {
+        let model = try makeModel()
+        await open(model)
+        model.openRenameCameras()
+        // The screen edits a copy; cancelling never applies it.
+        model.closeForm()
+        XCTAssertEqual(model.cameras.camera(channel: 5)?.name, "Canal 5")
+        XCTAssertEqual(model.route, .grid)
+    }
+
     func testClosingAFormOnAHiddenCameraGoesToTheGrid() async throws {
         let model = try makeModel()
         await open(model)

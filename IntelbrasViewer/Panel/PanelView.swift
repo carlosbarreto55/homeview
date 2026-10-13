@@ -35,19 +35,7 @@ struct PanelView: View {
         case .dvrSettings:
             DVRFormView(model: model, mode: .settings)
         case .renameCameras:
-            FormPlaceholder(title: "Renomear câmeras", model: model)
+            RenameCamerasView(model: model)
         }
-    }
-}
-
-private struct FormPlaceholder: View {
-    let title: String
-    let model: AppModel
-
-    var body: some View {
-        VStack {
-            Button("Cancelar") { model.closeForm() }
-        }
-        .frame(maxWidth: .infinity, minHeight: 200)
     }
 }
