@@ -31,7 +31,7 @@ Findings from each spike subtask are written to `docs/spike-notes.md` in the sam
 - [x] 4.1 `CameraListStore`: 8 default cameras "Canal 1"…"Canal 8", rename with normalization (trim, empty → default, 30-character limit), visibility, JSON persistence; tests — commit: `feat(cameras): add camera list with names and visibility`
 - [x] 4.2 `RetryPolicy` (5 s, doubling, max 30 s, reset on success) with an injected clock; tests — commit: `feat(streams): add stream retry policy`
 - [x] 4.3 `StreamSession`: owns a `CameraPlayer` and a `RetryPolicy`, states `connecting` / `playing` / `failed(nextRetry)`, restart for refresh; tests with a fake player — commit: `feat(streams): add per-camera stream session`
-- [ ] 4.4 `ConnectionStatus.derive(sessions, lastProbe)`; tests for "Conectando…", "Conectado", "Sem conexão com o DVR", "Usuário ou senha incorretos" — commit: `feat(streams): derive overall connection status`
+- [x] 4.4 `ConnectionStatus.derive(sessions, lastProbe)`; tests for "Conectando…", "Conectado", "Sem conexão com o DVR", "Usuário ou senha incorretos" — commit: `feat(streams): derive overall connection status`
 
 ## 5. Panel UI
 
