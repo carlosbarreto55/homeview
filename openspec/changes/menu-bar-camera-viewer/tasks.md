@@ -24,7 +24,7 @@ Findings from each spike subtask are written to `docs/spike-notes.md` in the sam
 - [x] 3.2 Digest auth: parse `WWW-Authenticate`, compute the response (no `qop` and `qop=auth`); tests with the RFC 2617 example — commit: `feat(connection): compute RTSP digest authentication`
 - [x] 3.3 `RTSPProbe` on Network.framework with an injectable transport: DESCRIBE, challenge, authenticated retry, 5 s timeout, classification (ok / wrong credentials / not found / local network denied); tests for each outcome over a fake transport — commit: `feat(connection): probe DVR credentials over RTSP`
 - [x] 3.4 `KeychainStore` (save, read, delete user + password) with tests on a test-only service name — commit: `feat(connection): store DVR credentials in the Keychain`
-- [ ] 3.5 `DVRSettingsStore` combining `UserDefaults` (host, port) and the Keychain; tests with an isolated defaults suite — commit: `feat(connection): persist DVR settings`
+- [x] 3.5 `DVRSettingsStore` combining `UserDefaults` (host, port) and the Keychain; tests with an isolated defaults suite — commit: `feat(connection): persist DVR settings`
 
 ## 4. Cameras and streams (unit tested)
 
