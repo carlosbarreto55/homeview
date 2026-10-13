@@ -40,25 +40,6 @@ struct PanelView: View {
     }
 }
 
-struct EnlargedCameraView: View {
-    let model: AppModel
-    let channel: Int
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Group {
-                if let session = model.session(channel: channel) {
-                    PlayerView(player: session.player)
-                } else {
-                    Color.black
-                }
-            }
-            .aspectRatio(16 / 9, contentMode: .fit)
-        }
-        .padding(12)
-    }
-}
-
 private struct FormPlaceholder: View {
     let title: String
     let model: AppModel

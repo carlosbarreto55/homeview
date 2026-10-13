@@ -78,7 +78,7 @@ struct CameraTile: View {
             if let session {
                 PlayerView(player: session.player)
             }
-            overlay
+            TileStateOverlay(state: TileState(session: session?.state, isVerifying: isVerifying))
         }
         .aspectRatio(16 / 9, contentMode: .fit)
         .overlay(alignment: .topLeading) {
@@ -104,10 +104,30 @@ struct CameraTile: View {
         .contentShape(Rectangle())
         .onHover { isHovered = $0 }
     }
+}
 
-    @ViewBuilder
-    private var overlay: some View {
-        switch TileState(session: session?.state, isVerifying: isVerifying) {
+/// What a tile shows over its picture.
+enum TileState: Equatable {
+    case connecting
+    case noSignal
+    case playing
+
+    init(session: StreamSession.State?, isVerifying: Bool) {
+        switch session {
+        case .playing: self = .playing
+        case .connecting: self = .connecting
+        case .failed, .stopped: self = .noSignal
+        case nil: self = isVerifying ? .connecting : .noSignal
+        }
+    }
+}
+
+/// "Conectando…" or "Sem sinal" over a camera's picture.
+struct TileStateOverlay: View {
+    let state: TileState
+
+    var body: some View {
+        switch state {
         case .connecting:
             VStack(spacing: 6) {
                 ProgressView().controlSize(.small).tint(.white)
@@ -124,22 +144,6 @@ struct CameraTile: View {
             .foregroundStyle(.white.opacity(0.8))
         case .playing:
             EmptyView()
-        }
-    }
-}
-
-/// What a tile shows over its picture.
-enum TileState: Equatable {
-    case connecting
-    case noSignal
-    case playing
-
-    init(session: StreamSession.State?, isVerifying: Bool) {
-        switch session {
-        case .playing: self = .playing
-        case .connecting: self = .connecting
-        case .failed, .stopped: self = .noSignal
-        case nil: self = isVerifying ? .connecting : .noSignal
         }
     }
 }
