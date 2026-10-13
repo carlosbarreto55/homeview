@@ -17,10 +17,18 @@ final class SpikeModel {
             guard let self else { return }
             self.state = state
             Logger.player.info("state ch\(channel) \(String(describing: state), privacy: .public)")
+            if state == .connecting, SpikeFrameDump.basePath != nil {
+                Task { @MainActor in
+                    let frame = await self.player.currentFrame()
+                    Logger.player.info("frame while connecting: \(frame == nil ? "nil" : "image", privacy: .public)")
+                }
+            }
             if state == .playing, let path = SpikeFrameDump.basePath {
                 Task { @MainActor in
                     try? await Task.sleep(for: .seconds(3))
-                    await SpikeFrameDump.dump(from: self.player, to: "\(path)-ch\(channel)")
+                    await SpikeFrameDump.dump(from: self.player, to: "\(path)-ch\(channel)-a")
+                    try? await Task.sleep(for: .seconds(2))
+                    await SpikeFrameDump.dump(from: self.player, to: "\(path)-ch\(channel)-b")
                 }
             }
         }

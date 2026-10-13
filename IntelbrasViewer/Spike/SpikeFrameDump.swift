@@ -14,10 +14,14 @@ enum SpikeFrameDump {
 
     @MainActor
     static func dump(from player: CameraPlayer, to basePath: String) async {
+        let clock = ContinuousClock()
+        let started = clock.now
         guard let frame = await player.currentFrame() else {
             Logger.player.error("frame dump: no frame")
             return
         }
+        let elapsed = clock.now - started
+        Logger.player.info("frame dump: grab took \(elapsed.formatted(.units(allowed: [.milliseconds], fractionalPart: .show(length: 1))), privacy: .public)")
         let height = frame.height
         let width = Int((Double(height) * 16 / 9).rounded())
         write(frame, to: basePath + "-raw.png")

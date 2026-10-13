@@ -144,3 +144,21 @@ substreams), sampling RTSP connections with `lsof` every 0.25 s:
   icon, closing by clicking outside the panel, and Esc. Pressing the button
   from code goes through the same toggle, but focus behaves differently with
   a real click.
+
+## 2.6 Grabbing the current frame (2026-10-13)
+
+Result: **KSPlayer gives the current frame as a `CGImage` directly.**
+
+- `KSMEPlayer.thumbnailImageAtCurrentTime()` converts the pixel buffer last
+  handed to the view (`MetalPlayView.pixelBuffer`) into a `CGImage`.
+  `KSCameraPlayer.currentFrame()` wraps it; there is no need to read the
+  rendered layer.
+- The image has the **stream's pixel size**, not the on-screen shape:
+  960x1080 for a main stream, 352x240 for a substream. The snapshot must
+  redraw it at 16:9 (1920x1080 for the main stream), as `SpikeFrameDump` does.
+- It returns `nil` until the first frame has been shown (checked right after
+  `start`, while connecting), which is the signal for keeping the snapshot
+  button disabled.
+- It is the live frame: two grabs 2 s apart show the DVR's on-screen clock at
+  01:18:40 and 01:18:42.
+- Cost: 5 ms for the first grab, 0.1 ms after that, on the main actor.
