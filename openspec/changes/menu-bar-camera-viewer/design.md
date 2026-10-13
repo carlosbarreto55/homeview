@@ -55,7 +55,7 @@ The probe is used by "Conectar"/"Salvar", and again when every tile has failed, 
 - `AppModel` (`@Observable`, main actor): the route (`setup`, `grid`, `enlarged(channel)`, `dvrSettings`, `renameCameras`), the remembered view for reopening, the panel's visibility, and the footer status.
 - `DVRSettingsStore`: host and port in `UserDefaults`; user and password in a `KeychainStore` (generic password, service = bundle id, account = user, data = password).
 - `CameraListStore`: 8 `Camera(channel, name, isVisible)` saved as JSON in `UserDefaults`; normalizes names (trim, empty → "Canal N", max 30 characters).
-- `StreamSession` per visible tile: wraps a `CameraPlayer` and a `RetryPolicy` (5 s, doubling, max 30 s, reset on success). States: `connecting`, `playing`, `failed(nextRetry)`. Time is injected so the policy is testable.
+- `StreamSession` per visible tile: wraps a `CameraPlayer` and a `RetryPolicy` (5 s, doubling, max 30 s, reset on success). States: `connecting`, `playing`, `failed(nextRetry)`. Time is injected so the policy is testable. Retrying can be suspended: when the probe reports wrong credentials, every session stops retrying (to stay clear of the DVR's lockout) until the settings are saved again or the person presses refresh.
 - `ConnectionStatus.derive(sessions, lastProbe)`: pure function that yields "Conectando…", "Conectado", "Sem conexão com o DVR" or "Usuário ou senha incorretos".
 - `SnapshotWriter`: takes the player's current `CGImage`, redraws it at 16:9 with the stream's height, writes JPEG (quality 0.9) through ImageIO into `~/Pictures/Intelbras Viewer`; `SnapshotFileName` sanitizes names (`/`, `:` and control characters → `-`).
 - `LoginItem`: wraps `SMAppService.mainApp` and re-reads its status each time the "…" menu opens.
@@ -71,10 +71,22 @@ Unit tests (XCTest) for `StreamURL`, Digest computation (RFC 2617 example), prob
 
 ## Risks / Trade-offs
 
-- [KSPlayer cannot play the DVR's H.265 stream smoothly, or 8 at once is too heavy] → the spike checks both on the real DVR before the UI is built; fallback is VLCKit behind the same `CameraPlayer` protocol.
-- [FFmpeg does not decode percent-encoded credentials in RTSP URLs, so a password with `@` or `:` fails] → the spike tests a password with special characters; if it fails, pass credentials through the player's options when it allows, otherwise setup warns that the password must not contain `@ : / # ?` and asks the person to change it on the DVR.
-- [Occlusion notifications do not fire as expected for the MenuBarExtra window] → the spike logs open/close events; fallback is observing `didBecomeKey`/`didResignKey` on the same window.
-- [The DVR limits concurrent RTSP sessions per user] → the spike opens all 8 substreams at once; if the DVR refuses some, the grid limits concurrent streams and the design is revisited.
+Spike results (tasks 2.1–2.6, 2026-10-13) are in `docs/spike-notes.md`. Risks the spike settled:
+
+- ~~[KSPlayer cannot play the DVR's H.265 stream smoothly, or 8 at once is too heavy]~~ → **settled, KSPlayer stays.** Main stream HEVC 960x1080 at 30 fps plays on VideoToolbox at about 6% CPU; all 8 substreams (H.264 352x240, 7 fps) at about 8% CPU and 125 MB for the whole app. The player is `KSMEPlayer` used directly (not `KSPlayerLayer`, which adds Now Playing and remote-control handling). No VLCKit switch.
+- ~~[FFmpeg does not decode percent-encoded credentials in RTSP URLs]~~ → **settled, it does.** `a@b:c/d#e` sent percent-encoded produces the right Digest response (checked against a fake RTSP server), and the real password, which has reserved characters, plays the same way. No password restrictions in setup.
+- ~~[Occlusion notifications do not fire as expected for the MenuBarExtra window]~~ → **settled, they do.** Visible/hidden arrive within 25–65 ms of each open and close, and all RTSP connections are gone within 0.25 s of closing. `didBecomeKey` is unreliable (not sent on the first open), so there is no key-status fallback. The observer also reports `hidden` once when the window is first created; the model ignores repeated reports.
+- ~~[The DVR limits concurrent RTSP sessions per user]~~ → **settled, no limit hit.** 8 simultaneous sessions accepted.
+
+Risks still open, or found by the spike:
+
+- [Wrong credentials lock the DVR user] Dahua-based firmware usually locks a user for about 30 minutes after about 5 failed logins, and 8 tiles retrying a rejected password every 5–30 s would reach that in seconds. → When every tile has failed, the probe runs once; if it reports wrong credentials, the sessions stop retrying (footer "Usuário ou senha incorretos" with "Corrigir") until the settings are saved again or the person presses refresh. Setup and "Salvar" make exactly one authenticated attempt per press.
+- [User names are case-sensitive] The DVR user is `macApp`; `macapp` gets the same `401` as a wrong password, because the name is part of the Digest hash. → The "Usuário" field keeps exactly what is typed (no capitalization, autocorrection or lowercasing); the wrong-credentials message is the same for both cases.
+- [Keychain prompts with ad-hoc signing] Each rebuild changes the ad-hoc signature, so a rebuilt app may get a Keychain "allow access" dialog for the item an earlier build created, and `SecItemCopyMatching` blocks the calling thread until it is answered. → `DVRSettingsStore` reads the Keychain once, when the panel first needs it, never inside a view's body; the dialog is expected during development and documented in the README. Items made by the `security` tool are worse (only Apple tools are trusted), so the app always creates its own item.
+- [FFmpeg's log can contain the full stream URL, with credentials] At debug level FFmpeg prints the URL it opens. → The app leaves KSPlayer at its default log level (warning), whose messages go to `os_log` as private data; the spike's debug logging (`SPIKE_FFMPEG_LOG=1`) removes the password and is deleted with the spike code in 5.1.
+- [A channel with no camera still streams] The DVR serves channels 7 and 8 as a black picture with its text overlay, so the player reports `playing` and the tile never shows "Sem sinal". → Expected; "Mostrar" off is how the person removes such channels.
+- [Slow first frame] About 4 s from start to first frame, mostly FFmpeg probing a 7 fps stream. → Acceptable ("Conectando…" covers it); `probesize` and `max_analyze_duration` can be tuned later.
+- [Building needs the Metal Toolchain] KSPlayer has a Metal shader, and Xcode 27 does not include the Metal Toolchain by default. → `xcodebuild -downloadComponent MetalToolchain`, documented in the README. FFmpegKit's macOS frameworks also need `SKIP_EMBEDDED_FRAMEWORKS_VALIDATION` (set in `project.yml`).
 - [macOS Local Network permission is denied, and every request fails silently] → the probe detects `localNetworkDenied` and shows how to enable it.
 - [KSPlayer is GPL-3.0] → acceptable while the app is personal; distributing it would require switching players or a commercial license.
 - [Not sandboxed] → acceptable for a personal app; nothing in the code depends on being unsandboxed beyond file locations, so sandboxing can be added later.
@@ -85,5 +97,6 @@ New app, nothing to migrate. To remove it: choose "Sair", delete the app, and de
 
 ## Open Questions
 
-- The substream's codec and resolution were not read from the DVR (only the main stream's); the spike will log them. This does not change the design.
-- Whether KSPlayer exposes the current frame as a `CGImage` directly or the snapshot needs to read the rendered layer; resolved in the spike.
+- ~~The substream's codec and resolution~~ → resolved by the spike: H.264, 352x240, 7 fps on every channel. The grid tiles are larger than the substream on a Retina screen, so they look soft; acceptable for a preview.
+- ~~Whether KSPlayer exposes the current frame as a `CGImage`~~ → resolved: `KSMEPlayer.thumbnailImageAtCurrentTime()` returns the last shown frame at the stream's pixel size (960x1080 for a main stream), or `nil` before the first frame. The snapshot redraws it at 16:9.
+- The DVR's clock was about 20 minutes ahead of the Mac's. Snapshot names use the Mac's clock, so they may not match the time drawn in the picture; not something the app should change (it cannot write DVR settings).

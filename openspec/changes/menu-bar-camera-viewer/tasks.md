@@ -16,7 +16,7 @@ Findings from each spike subtask are written to `docs/spike-notes.md` in the sam
 - [x] 2.4 Test a percent-encoded password containing `@ : /` (temporary password on a test DVR user) and record whether FFmpeg accepts it — commit: `test(spike): check percent-encoded RTSP credentials`
 - [x] 2.5 Log the panel window's occlusion-state changes on open and close, and confirm streams can be started and stopped from them — commit: `feat(spike): start and stop streams from panel visibility`
 - [x] 2.6 Find how to grab the current frame as a `CGImage` from KSPlayer — commit: `feat(spike): grab current frame from the player`
-- [ ] 2.7 Write the spike's findings into design.md (update Risks and Open Questions); if KSPlayer fails 2.1–2.3, the switch to VLCKit behind the same protocol is its own `refactor(player): replace KSPlayer with VLCKit` commit before this one — commit: `docs(openspec): record spike findings in design`
+- [x] 2.7 Write the spike's findings into design.md (update Risks and Open Questions); if KSPlayer fails 2.1–2.3, the switch to VLCKit behind the same protocol is its own `refactor(player): replace KSPlayer with VLCKit` commit before this one — commit: `docs(openspec): record spike findings in design`
 
 ## 3. Connection core (unit tested)
 
