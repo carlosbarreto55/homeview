@@ -27,8 +27,7 @@ struct PanelView: View {
             ProgressView()
                 .frame(maxWidth: .infinity, minHeight: 200)
         case .setup:
-            Text("Configurar DVR")
-                .frame(maxWidth: .infinity, minHeight: 200)
+            DVRFormView(model: model)
         case .grid:
             CameraGridView(model: model)
         case .enlarged(let channel):

@@ -210,3 +210,99 @@ final class AppModelTests: XCTestCase {
         XCTAssertEqual(model.route, .grid)
     }
 }
+
+@MainActor
+final class AppModelSetupTests: XCTestCase {
+    private var suiteName: String!
+    private var defaults: UserDefaults!
+    private var settingsStore: DVRSettingsStore!
+    private var players: [FakeCameraPlayer] = []
+    private var probeResult = RTSPProbe.Result.ok
+    private var probed: [DVRSettings] = []
+
+    override func setUp() async throws {
+        suiteName = "com.carloseduardo.IntelbrasViewer.tests.\(UUID().uuidString)"
+        defaults = UserDefaults(suiteName: suiteName)
+        settingsStore = DVRSettingsStore(defaults: defaults, keychain: KeychainStore(service: suiteName))
+        players = []
+        probed = []
+    }
+
+    override func tearDown() async throws {
+        try? settingsStore.forget()
+        defaults.removePersistentDomain(forName: suiteName)
+    }
+
+    private func makeOpenModel() async -> AppModel {
+        let model = AppModel(
+            settingsStore: settingsStore, cameras: CameraListStore(defaults: defaults),
+            probe: { [unowned self] settings in
+                probed.append(settings)
+                return probeResult
+            },
+            makePlayer: { [unowned self] in
+                let player = FakeCameraPlayer()
+                players.append(player)
+                return player
+            })
+        model.panelVisibilityChanged(true)
+        await model.settle()
+        return model
+    }
+
+    private let login = Credentials(user: "macApp", password: "a@b:c")
+
+    func testSetupIsPrefilled() async {
+        let model = await makeOpenModel()
+        XCTAssertEqual(model.route, .setup)
+        XCTAssertEqual(model.formAddress.host, "192.168.1.2")
+        XCTAssertEqual(model.formAddress.port, 554)
+    }
+
+    func testValidLoginIsSavedAndShowsTheGrid() async throws {
+        let model = await makeOpenModel()
+        let error = await model.connect(host: " 192.168.1.2 ", port: 554, credentials: login)
+        XCTAssertNil(error)
+        XCTAssertEqual(probed.count, 1)
+        XCTAssertEqual(probed.first?.host, "192.168.1.2")
+        XCTAssertEqual(model.route, .grid)
+        XCTAssertEqual(try settingsStore.load()?.credentials, login)
+        XCTAssertEqual(model.sessions.count, 8)
+        XCTAssertEqual(probed.count, 1, "streams start without a second check")
+    }
+
+    func testWrongPasswordSavesNothing() async throws {
+        probeResult = .wrongCredentials
+        let model = await makeOpenModel()
+        let error = await model.connect(host: "192.168.1.2", port: 554, credentials: login)
+        XCTAssertEqual(error, .wrongCredentials)
+        XCTAssertEqual(error?.message, "Usuário ou senha incorretos")
+        XCTAssertEqual(model.route, .setup)
+        XCTAssertNil(try settingsStore.load())
+        XCTAssertTrue(players.isEmpty)
+    }
+
+    func testUnreachableDVR() async throws {
+        probeResult = .notFound
+        let model = await makeOpenModel()
+        let error = await model.connect(host: "192.168.1.250", port: 554, credentials: login)
+        XCTAssertEqual(error?.message, "Não foi possível encontrar o DVR em 192.168.1.250:554")
+        XCTAssertNil(try settingsStore.load())
+    }
+
+    func testLocalNetworkDenied() async {
+        probeResult = .localNetworkDenied
+        let model = await makeOpenModel()
+        let error = await model.connect(host: "192.168.1.2", port: 554, credentials: login)
+        XCTAssertEqual(error?.message,
+                       "Permita o acesso à rede local em Ajustes do Sistema > Privacidade e Segurança > Rede Local")
+    }
+
+    func testRestartingTheAppSkipsSetup() async throws {
+        let first = await makeOpenModel()
+        _ = await first.connect(host: "192.168.1.2", port: 554, credentials: login)
+        let second = await makeOpenModel()
+        XCTAssertEqual(second.route, .grid)
+        XCTAssertEqual(second.settings?.credentials, login)
+    }
+}

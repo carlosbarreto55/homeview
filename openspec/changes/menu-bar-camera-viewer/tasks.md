@@ -37,7 +37,7 @@ Findings from each spike subtask are written to `docs/spike-notes.md` in the sam
 
 - [x] 5.1 `AppModel` with routes (setup, grid, enlarged, DVR settings, rename), remembered view on reopen, and stream start/stop driven by the panel's visibility observer (from 2.5); Esc closes the panel unless a text field is being edited; remove the spike UI it replaces — commit: `feat(ui): add app model with routes and panel lifecycle`
 - [x] 5.2 Panel chrome: "Câmeras" header with refresh and "…" menu, footer with status text, "Corrigir" button when credentials are rejected, and the folder button — commit: `feat(ui): add panel header, menu and status footer`
-- [ ] 5.3 First-run "Configurar DVR" form: prefilled address and port, hidden password, "Conectar" runs the probe and shows each error message from the dvr-connection spec — commit: `feat(ui): add first-run DVR setup`
+- [x] 5.3 First-run "Configurar DVR" form: prefilled address and port, hidden password, "Conectar" runs the probe and shows each error message from the dvr-connection spec — commit: `feat(ui): add first-run DVR setup`
 - [ ] 5.4 "Configurações do DVR": same form, empty password keeps the saved one, "Salvar", "Cancelar", "Esquecer DVR" — commit: `feat(ui): add DVR settings with forget option`
 - [ ] 5.5 Camera grid: two columns, 16:9 tiles with name and channel badge, scrolling past 540 pt, "Conectando…" and "Sem sinal" states, "Nenhuma câmera visível" with "Escolher câmeras" — commit: `feat(ui): add live camera grid`
 - [ ] 5.6 Enlarged view: main stream at 16:9, "‹ Name" back control, grid streams stopped while enlarged and restarted on back — commit: `feat(ui): add enlarged camera view`

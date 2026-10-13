@@ -87,6 +87,57 @@ final class AppModel {
         }
     }
 
+    // MARK: DVR settings
+
+    enum SettingsError: Error, Equatable {
+        case wrongCredentials
+        case notFound(host: String, port: Int)
+        case localNetworkDenied
+        case saveFailed
+
+        var message: String {
+            switch self {
+            case .wrongCredentials:
+                "Usuário ou senha incorretos"
+            case .notFound(let host, let port):
+                "Não foi possível encontrar o DVR em \(host):\(port)"
+            case .localNetworkDenied:
+                "Permita o acesso à rede local em Ajustes do Sistema > Privacidade e Segurança > Rede Local"
+            case .saveFailed:
+                "Não foi possível guardar o usuário e a senha no Keychain"
+            }
+        }
+    }
+
+    /// The address shown in the setup form: the saved one, or the defaults.
+    var formAddress: (host: String, port: Int) {
+        settings.map { ($0.host, $0.port) } ?? settingsStore.savedAddress
+    }
+
+    /// "Conectar": checks the login with the DVR (one attempt), and only if
+    /// it is accepted saves it and shows the cameras.
+    func connect(host: String, port: Int, credentials: Credentials) async -> SettingsError? {
+        let candidate = DVRSettings(host: host.trimmingCharacters(in: .whitespaces), port: port,
+                                    credentials: credentials)
+        switch await probe(candidate) {
+        case .ok:
+            break
+        case .wrongCredentials:
+            return .wrongCredentials
+        case .notFound:
+            return .notFound(host: candidate.host, port: candidate.port)
+        case .localNetworkDenied:
+            return .localNetworkDenied
+        }
+        let store = settingsStore
+        let saved = await Task.detached { (try? store.save(candidate)) != nil }.value
+        guard saved else { return .saveFailed }
+        settings = candidate
+        route = .grid
+        startStreams(verify: false)
+        return nil
+    }
+
     // MARK: Navigation
 
     func openCamera(channel: Int) {
