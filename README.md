@@ -1,7 +1,7 @@
 # Intelbras Viewer
 
-A small macOS menu bar app for watching the cameras of an Intelbras DVR on
-the local network, without the official Intelbras apps or their cloud.
+A small macOS menu bar app for watching the cameras DVR on
+the local network, without official apps or their cloud.
 
 Click the camera icon in the menu bar and a panel opens with every camera
 live. Click a camera to see it alone in full quality, take a snapshot, and
