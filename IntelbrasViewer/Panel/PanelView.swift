@@ -40,47 +40,6 @@ struct PanelView: View {
     }
 }
 
-extension EnvironmentValues {
-    /// Set when the panel is rendered to an image (no scroll views).
-    @Entry var rendersStatically = false
-}
-
-struct CameraGridView: View {
-    let model: AppModel
-    @Environment(\.rendersStatically) private var rendersStatically
-
-    var body: some View {
-        if rendersStatically {
-            grid
-        } else {
-            ScrollView { grid }
-                .frame(maxHeight: 540)
-        }
-    }
-
-    private var grid: some View {
-        LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)], spacing: 12) {
-            ForEach(model.cameras.visibleCameras) { camera in
-                VStack(alignment: .leading, spacing: 4) {
-                    Group {
-                        if let session = model.session(channel: camera.channel) {
-                            PlayerView(player: session.player)
-                        } else {
-                            Color.black
-                        }
-                    }
-                    .aspectRatio(16 / 9, contentMode: .fit)
-                    Text(camera.name)
-                        .font(.caption)
-                }
-                .contentShape(Rectangle())
-                .onTapGesture { model.openCamera(channel: camera.channel) }
-            }
-        }
-        .padding(12)
-    }
-}
-
 struct EnlargedCameraView: View {
     let model: AppModel
     let channel: Int

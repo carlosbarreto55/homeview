@@ -65,9 +65,20 @@ final class PanelRenderTests: XCTestCase {
 
     func testRenderGrid() async throws {
         let model = try await makeModel()
+        var cameras = model.cameras.cameras
+        cameras[2].name = "Garagem"
+        model.cameras.apply(cameras)
         players.prefix(5).forEach { $0.emit(.playing) }
         players[5].emit(.failed(reason: "gone"))
         render(model, "grid")
+    }
+
+    func testRenderEmptyGrid() async throws {
+        let model = try await makeModel()
+        model.openRenameCameras()
+        model.cameras.apply(model.cameras.cameras.map { var camera = $0; camera.isVisible = false; return camera })
+        model.closeForm()
+        render(model, "grid-empty")
     }
 
     func testRenderEnlarged() async throws {

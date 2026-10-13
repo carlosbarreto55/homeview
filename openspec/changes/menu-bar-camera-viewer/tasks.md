@@ -39,7 +39,7 @@ Findings from each spike subtask are written to `docs/spike-notes.md` in the sam
 - [x] 5.2 Panel chrome: "Câmeras" header with refresh and "…" menu, footer with status text, "Corrigir" button when credentials are rejected, and the folder button — commit: `feat(ui): add panel header, menu and status footer`
 - [x] 5.3 First-run "Configurar DVR" form: prefilled address and port, hidden password, "Conectar" runs the probe and shows each error message from the dvr-connection spec — commit: `feat(ui): add first-run DVR setup`
 - [x] 5.4 "Configurações do DVR": same form, empty password keeps the saved one, "Salvar", "Cancelar", "Esquecer DVR" — commit: `feat(ui): add DVR settings with forget option`
-- [ ] 5.5 Camera grid: two columns, 16:9 tiles with name and channel badge, scrolling past 540 pt, "Conectando…" and "Sem sinal" states, "Nenhuma câmera visível" with "Escolher câmeras" — commit: `feat(ui): add live camera grid`
+- [x] 5.5 Camera grid: two columns, 16:9 tiles with name and channel badge, scrolling past 540 pt, "Conectando…" and "Sem sinal" states, "Nenhuma câmera visível" with "Escolher câmeras" — commit: `feat(ui): add live camera grid`
 - [ ] 5.6 Enlarged view: main stream at 16:9, "‹ Name" back control, grid streams stopped while enlarged and restarted on back — commit: `feat(ui): add enlarged camera view`
 - [ ] 5.7 "Renomear câmeras": 8 rows with number, name field and "Mostrar" switch; "Concluído" applies, "Cancelar" discards — commit: `feat(ui): add rename and hide cameras screen`
 - [ ] 5.8 "Abrir ao iniciar o Mac" with `SMAppService.mainApp`, checkmark read from macOS each time the menu opens; "Sair" stops streams and quits — commit: `feat(ui): add open at login and quit`
