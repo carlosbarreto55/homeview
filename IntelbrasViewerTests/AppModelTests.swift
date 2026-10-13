@@ -305,4 +305,53 @@ final class AppModelSetupTests: XCTestCase {
         XCTAssertEqual(second.route, .grid)
         XCTAssertEqual(second.settings?.credentials, login)
     }
+
+    func testSettingsKeepThePasswordWhenLeftEmpty() async throws {
+        let model = await makeOpenModel()
+        _ = await model.connect(host: "192.168.1.2", port: 554, credentials: login)
+        model.openCamera(channel: 4)
+        model.openDVRSettings()
+
+        let error = await model.saveSettings(host: "192.168.1.2", port: 8554, user: "macApp", password: "")
+        XCTAssertNil(error)
+        XCTAssertEqual(probed.last?.port, 8554)
+        XCTAssertEqual(probed.last?.credentials, login, "checked with the saved password")
+        XCTAssertEqual(try settingsStore.load()?.port, 8554)
+        XCTAssertEqual(try settingsStore.load()?.credentials, login)
+        XCTAssertEqual(model.route, .enlarged(channel: 4), "back to the previous view")
+        XCTAssertEqual(players.last?.startedURLs.last?.port, 8554)
+    }
+
+    func testRejectedSettingsChangeNothing() async throws {
+        let model = await makeOpenModel()
+        _ = await model.connect(host: "192.168.1.2", port: 554, credentials: login)
+        model.openDVRSettings()
+        probeResult = .wrongCredentials
+        let error = await model.saveSettings(host: "192.168.1.2", port: 554, user: "macApp", password: "wrong")
+        XCTAssertEqual(error, .wrongCredentials)
+        XCTAssertEqual(model.route, .dvrSettings)
+        XCTAssertEqual(try settingsStore.load()?.credentials, login)
+    }
+
+    func testCancelKeepsTheSettings() async throws {
+        let model = await makeOpenModel()
+        _ = await model.connect(host: "192.168.1.2", port: 554, credentials: login)
+        model.openDVRSettings()
+        model.closeForm()
+        XCTAssertEqual(model.route, .grid)
+        XCTAssertEqual(try settingsStore.load()?.credentials, login)
+    }
+
+    func testForgetRemovesEverythingAndReturnsToSetup() async throws {
+        let model = await makeOpenModel()
+        _ = await model.connect(host: "192.168.1.20", port: 554, credentials: login)
+        let gridPlayers = players
+        model.openDVRSettings()
+        model.forgetDVR()
+        XCTAssertEqual(model.route, .setup)
+        XCTAssertNil(try settingsStore.load())
+        XCTAssertTrue(model.sessions.isEmpty)
+        XCTAssertTrue(gridPlayers.allSatisfy { $0.stopCount >= 1 })
+        XCTAssertEqual(model.formAddress.host, "192.168.1.2", "address back to the default")
+    }
 }

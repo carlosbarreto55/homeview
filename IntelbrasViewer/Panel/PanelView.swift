@@ -33,7 +33,7 @@ struct PanelView: View {
         case .enlarged(let channel):
             EnlargedCameraView(model: model, channel: channel)
         case .dvrSettings:
-            FormPlaceholder(title: "Configurações do DVR", model: model)
+            DVRFormView(model: model, mode: .settings)
         case .renameCameras:
             FormPlaceholder(title: "Renomear câmeras", model: model)
         }

@@ -119,6 +119,33 @@ final class AppModel {
     func connect(host: String, port: Int, credentials: Credentials) async -> SettingsError? {
         let candidate = DVRSettings(host: host.trimmingCharacters(in: .whitespaces), port: port,
                                     credentials: credentials)
+        if let error = await verifyAndSave(candidate) { return error }
+        route = .grid
+        startStreams(verify: false)
+        return nil
+    }
+
+    /// "Salvar" in "Configurações do DVR": like "Conectar", but an empty
+    /// password keeps the saved one, and it returns to the previous view.
+    func saveSettings(host: String, port: Int, user: String, password: String) async -> SettingsError? {
+        let password = password.isEmpty ? settings?.credentials.password ?? "" : password
+        let candidate = DVRSettings(host: host.trimmingCharacters(in: .whitespaces), port: port,
+                                    credentials: Credentials(user: user, password: password))
+        if let error = await verifyAndSave(candidate) { return error }
+        closeForm()
+        return nil
+    }
+
+    /// "Esquecer DVR": removes the login and address and goes back to setup.
+    func forgetDVR() {
+        stopStreams()
+        try? settingsStore.forget()
+        settings = nil
+        lastProbe = nil
+        route = .setup
+    }
+
+    private func verifyAndSave(_ candidate: DVRSettings) async -> SettingsError? {
         switch await probe(candidate) {
         case .ok:
             break
@@ -133,8 +160,6 @@ final class AppModel {
         let saved = await Task.detached { (try? store.save(candidate)) != nil }.value
         guard saved else { return .saveFailed }
         settings = candidate
-        route = .grid
-        startStreams(verify: false)
         return nil
     }
 

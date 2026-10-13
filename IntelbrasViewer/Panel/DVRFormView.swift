@@ -1,9 +1,15 @@
 import SwiftUI
 
-/// "Configurar DVR": address, port, user and password, checked with the DVR
-/// before anything is saved.
+/// "Configurar DVR" (first run) and "Configurações do DVR": address, port,
+/// user and password, checked with the DVR before anything is saved.
 struct DVRFormView: View {
+    enum Mode {
+        case setup
+        case settings
+    }
+
     let model: AppModel
+    var mode = Mode.setup
 
     @State private var host = ""
     @State private var port = ""
@@ -19,9 +25,11 @@ struct DVRFormView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Digite o endereço do DVR na sua rede e o usuário que o app deve usar.")
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
+            if mode == .setup {
+                Text("Digite o endereço do DVR na sua rede e o usuário que o app deve usar.")
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
 
             Grid(alignment: .leadingFirstTextBaseline, horizontalSpacing: 12, verticalSpacing: 10) {
                 GridRow {
@@ -48,7 +56,7 @@ struct DVRFormView: View {
                 }
                 GridRow {
                     Text("Senha")
-                    SecureField("", text: $password)
+                    SecureField(mode == .settings ? "Deixe em branco para manter a atual" : "", text: $password)
                         .textContentType(.password)
                         .focused($focusedField, equals: .password)
                 }
@@ -63,23 +71,32 @@ struct DVRFormView: View {
             }
 
             HStack {
+                if mode == .settings {
+                    Button("Esquecer DVR", role: .destructive) { model.forgetDVR() }
+                        .disabled(isChecking)
+                }
                 if isChecking {
                     ProgressView().controlSize(.small)
                     Text("Verificando…").foregroundStyle(.secondary)
                 }
                 Spacer()
-                Button("Conectar", action: connect)
+                if mode == .settings {
+                    Button("Cancelar") { model.closeForm() }
+                        .keyboardShortcut(.cancelAction)
+                }
+                Button(mode == .settings ? "Salvar" : "Conectar", action: submit)
                     .keyboardShortcut(.defaultAction)
                     .disabled(!canSubmit)
             }
         }
         .padding(20)
-        .onSubmit(connect)
+        .onSubmit(submit)
         .onAppear {
             let address = model.formAddress
             host = address.host
             port = String(address.port)
-            focusedField = .user
+            user = mode == .settings ? model.settings?.credentials.user ?? "" : ""
+            focusedField = mode == .settings ? .password : .user
         }
     }
 
@@ -89,17 +106,22 @@ struct DVRFormView: View {
 
     private var canSubmit: Bool {
         !isChecking && !host.trimmingCharacters(in: .whitespaces).isEmpty && portNumber != nil
-            && !user.isEmpty && !password.isEmpty
+            && !user.isEmpty && (mode == .settings || !password.isEmpty)
     }
 
-    private func connect() {
+    private func submit() {
         guard canSubmit, let portNumber else { return }
         isChecking = true
         error = nil
         Task {
             // The user name is kept exactly as typed: the DVR is case-sensitive.
-            error = await model.connect(host: host, port: portNumber,
-                                        credentials: Credentials(user: user, password: password))
+            switch mode {
+            case .setup:
+                error = await model.connect(host: host, port: portNumber,
+                                            credentials: Credentials(user: user, password: password))
+            case .settings:
+                error = await model.saveSettings(host: host, port: portNumber, user: user, password: password)
+            }
             isChecking = false
         }
     }
