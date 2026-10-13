@@ -1,5 +1,5 @@
 import XCTest
-@testable import IntelbrasViewer
+@testable import HomeView
 
 /// A scripted `RTSPConnection`: each step answers one call.
 private final class FakeConnection: RTSPConnection, @unchecked Sendable {

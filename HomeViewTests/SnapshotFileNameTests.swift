@@ -1,5 +1,5 @@
 import XCTest
-@testable import IntelbrasViewer
+@testable import HomeView
 
 final class SnapshotFileNameTests: XCTestCase {
     private let saoPaulo = TimeZone(identifier: "America/Sao_Paulo")!

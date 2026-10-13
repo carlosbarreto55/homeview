@@ -1,6 +1,6 @@
 import SwiftUI
 import XCTest
-@testable import IntelbrasViewer
+@testable import HomeView
 
 /// Renders panel screens to PNG files for looking at the layout without
 /// opening the menu bar. Skipped unless `RENDER_PANEL_DIR` is set, e.g.
@@ -25,7 +25,7 @@ final class PanelRenderTests: XCTestCase {
         }
         directory = URL(fileURLWithPath: path, isDirectory: true)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        suiteName = "com.carloseduardo.IntelbrasViewer.tests.\(UUID().uuidString)"
+        suiteName = "com.carloseduardo.HomeView.tests.\(UUID().uuidString)"
         defaults = UserDefaults(suiteName: suiteName)
         settingsStore = DVRSettingsStore(defaults: defaults, keychain: KeychainStore(service: suiteName))
     }

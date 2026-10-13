@@ -1,5 +1,5 @@
 import AppKit
-@testable import IntelbrasViewer
+@testable import HomeView
 
 @MainActor
 final class FakeCameraPlayer: CameraPlayer {

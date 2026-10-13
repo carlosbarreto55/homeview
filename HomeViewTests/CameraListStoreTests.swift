@@ -1,5 +1,5 @@
 import XCTest
-@testable import IntelbrasViewer
+@testable import HomeView
 
 final class CameraListStoreTests: XCTestCase {
     private var suiteName: String!
@@ -7,7 +7,7 @@ final class CameraListStoreTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        suiteName = "com.carloseduardo.IntelbrasViewer.tests.\(UUID().uuidString)"
+        suiteName = "com.carloseduardo.HomeView.tests.\(UUID().uuidString)"
         defaults = UserDefaults(suiteName: suiteName)
     }
 

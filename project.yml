@@ -1,4 +1,4 @@
-name: IntelbrasViewer
+name: HomeView
 
 options:
   bundleIdPrefix: com.carloseduardo
@@ -24,49 +24,49 @@ packages:
     exactVersion: 2.3.4
 
 targets:
-  IntelbrasViewer:
+  HomeView:
     type: application
     platform: macOS
     sources:
-      - path: IntelbrasViewer
+      - path: HomeView
     dependencies:
       - package: KSPlayer
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.carloseduardo.IntelbrasViewer
-        PRODUCT_NAME: IntelbrasViewer
+        PRODUCT_BUNDLE_IDENTIFIER: com.carloseduardo.HomeView
+        PRODUCT_NAME: HomeView
         GENERATE_INFOPLIST_FILE: YES
-        INFOPLIST_KEY_CFBundleDisplayName: Intelbras Viewer
+        INFOPLIST_KEY_CFBundleDisplayName: HomeView
         INFOPLIST_KEY_LSUIElement: YES
-        INFOPLIST_KEY_NSLocalNetworkUsageDescription: O Intelbras Viewer precisa acessar a rede local para mostrar as câmeras do seu DVR.
+        INFOPLIST_KEY_NSLocalNetworkUsageDescription: O HomeView precisa acessar a rede local para mostrar as câmeras do seu DVR.
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.utilities
         # FFmpegKit ships its macOS libraries as static archives inside
         # iOS-style (shallow) frameworks. Xcode embeds them anyway and then
         # rejects the layout; they hold no code needed at run time.
         SKIP_EMBEDDED_FRAMEWORKS_VALIDATION: YES
 
-  IntelbrasViewerTests:
+  HomeViewTests:
     type: bundle.unit-test
     platform: macOS
     sources:
-      - path: IntelbrasViewerTests
+      - path: HomeViewTests
     dependencies:
-      - target: IntelbrasViewer
+      - target: HomeView
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.carloseduardo.IntelbrasViewerTests
+        PRODUCT_BUNDLE_IDENTIFIER: com.carloseduardo.HomeViewTests
         GENERATE_INFOPLIST_FILE: YES
-        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/IntelbrasViewer.app/Contents/MacOS/IntelbrasViewer"
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/HomeView.app/Contents/MacOS/HomeView"
         BUNDLE_LOADER: "$(TEST_HOST)"
 
 schemes:
-  IntelbrasViewer:
+  HomeView:
     build:
       targets:
-        IntelbrasViewer: all
-        IntelbrasViewerTests: [test]
+        HomeView: all
+        HomeViewTests: [test]
     test:
       targets:
-        - IntelbrasViewerTests
+        - HomeViewTests
     run:
       config: Debug

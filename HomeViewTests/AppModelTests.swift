@@ -1,5 +1,5 @@
 import XCTest
-@testable import IntelbrasViewer
+@testable import HomeView
 
 @MainActor
 final class AppModelTests: XCTestCase {
@@ -15,7 +15,7 @@ final class AppModelTests: XCTestCase {
                                        credentials: Credentials(user: "macApp", password: "secret"))
 
     override func setUp() async throws {
-        suiteName = "com.carloseduardo.IntelbrasViewer.tests.\(UUID().uuidString)"
+        suiteName = "com.carloseduardo.HomeView.tests.\(UUID().uuidString)"
         defaults = UserDefaults(suiteName: suiteName)
         settingsStore = DVRSettingsStore(defaults: defaults, keychain: KeychainStore(service: suiteName))
         players = []
@@ -282,7 +282,7 @@ final class AppModelSetupTests: XCTestCase {
     private var loginItem = FakeLoginItem()
 
     override func setUp() async throws {
-        suiteName = "com.carloseduardo.IntelbrasViewer.tests.\(UUID().uuidString)"
+        suiteName = "com.carloseduardo.HomeView.tests.\(UUID().uuidString)"
         defaults = UserDefaults(suiteName: suiteName)
         settingsStore = DVRSettingsStore(defaults: defaults, keychain: KeychainStore(service: suiteName))
         players = []

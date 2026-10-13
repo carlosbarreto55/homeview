@@ -24,7 +24,7 @@ protocol RTSPConnection: AnyObject {
 /// `RTSPConnection` over Network.framework.
 final class NetworkRTSPConnection: RTSPConnection, @unchecked Sendable {
     private let connection: NWConnection
-    private let queue = DispatchQueue(label: "com.carloseduardo.IntelbrasViewer.rtsp")
+    private let queue = DispatchQueue(label: "com.carloseduardo.HomeView.rtsp")
     // Only touched on `queue`.
     private var buffer = Data()
     private var localNetworkDenied = false

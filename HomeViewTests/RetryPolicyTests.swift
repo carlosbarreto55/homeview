@@ -1,5 +1,5 @@
 import XCTest
-@testable import IntelbrasViewer
+@testable import HomeView
 
 final class RetryPolicyTests: XCTestCase {
     private let start = Date(timeIntervalSinceReferenceDate: 1_000)

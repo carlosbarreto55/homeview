@@ -2,11 +2,11 @@
 # active developer directory (no `sudo xcode-select` needed).
 export DEVELOPER_DIR := /Applications/Xcode.app/Contents/Developer
 
-PROJECT     := IntelbrasViewer.xcodeproj
-SCHEME      := IntelbrasViewer
+PROJECT     := HomeView.xcodeproj
+SCHEME      := HomeView
 DERIVED     := DerivedData
 DESTINATION := platform=macOS
-APP         := $(DERIVED)/Build/Products/Debug/IntelbrasViewer.app
+APP         := $(DERIVED)/Build/Products/Debug/HomeView.app
 XCODEBUILD  := xcodebuild -project $(PROJECT) -scheme $(SCHEME) \
                -destination '$(DESTINATION)' -derivedDataPath $(DERIVED)
 
@@ -25,7 +25,7 @@ test: $(PROJECT)
 	$(XCODEBUILD) test
 
 run: build
-	-pkill -x IntelbrasViewer
+	-pkill -x HomeView
 	open $(APP)
 
 clean:

@@ -1,4 +1,4 @@
-# Camera Viewer
+# HomeView
 
 A small macOS menu bar app for watching the cameras DVR on
 the local network, without official apps or their cloud.
@@ -26,7 +26,7 @@ The interface is in Brazilian Portuguese.
   are stretched to their intended 16:9 shape, so people and wheels look
   right, not squeezed.
 - **Snapshots.** Saves the frame on screen as a 16:9 JPEG (1920x1080 for a
-  1080N main stream) in `~/Pictures/Intelbras Viewer`, named after the camera
+  1080N main stream) in `~/Pictures/HomeView`, named after the camera
   and the time, e.g. `Garagem 2026-10-13 21.04.37.jpg`. The folder button in
   the footer opens it in Finder.
 - **Names and hidden channels.** Rename each camera ("Canal 1"…"Canal 8" by
@@ -66,16 +66,16 @@ DVRs, and access from outside the home network.
 ## Build and run
 
 ```sh
-make generate   # create IntelbrasViewer.xcodeproj from project.yml
+make generate   # create HomeView.xcodeproj from project.yml
 make build      # build the app into DerivedData/
 make test       # run the unit tests
 make run        # build and open the app
 ```
 
-The built app is `DerivedData/Build/Products/Debug/IntelbrasViewer.app`; copy
+The built app is `DerivedData/Build/Products/Debug/HomeView.app`; copy
 it to `/Applications` to keep it. The Xcode project is generated and not
 committed; edit `project.yml` instead and run `make generate` again. You can
-also open the generated project in Xcode and run the `IntelbrasViewer` scheme.
+also open the generated project in Xcode and run the `HomeView` scheme.
 
 The app is signed to run locally (ad-hoc) and is not sandboxed. It is meant
 for personal use and is not notarized.
@@ -94,7 +94,7 @@ for personal use and is not notarized.
    and nothing is saved.
 
 After a rebuild, macOS may ask whether the new build may use its Keychain
-item ("Intelbras Viewer wants to use your confidential information…").
+item ("HomeView wants to use your confidential information…").
 Choose **Always Allow**. This happens because every ad-hoc build has a new
 signature.
 
@@ -161,15 +161,15 @@ The panel reopens on the view you left: the grid, or the same enlarged camera.
   apart "accepted", "wrong user or password", "DVR not found" and "local
   network denied", which the player's FFmpeg errors cannot.
 - **Storage.** Address and port in the app's preferences; user and password
-  in the Keychain (service `com.carloseduardo.IntelbrasViewer`); camera names
+  in the Keychain (service `com.carloseduardo.HomeView`); camera names
   and visibility as JSON in the preferences. Stream addresses with credentials
   exist only in memory; logs show them without user and password.
 
 ## Project layout
 
 ```
-IntelbrasViewer/
-  IntelbrasViewerApp.swift   MenuBarExtra scene
+HomeView/
+  HomeViewApp.swift   MenuBarExtra scene
   AppModel.swift             routes, streams, status, settings, snapshots
   Connection/                StreamURL, Digest auth, RTSPProbe, Keychain and settings stores
   Cameras/                   camera names and visibility
@@ -177,7 +177,7 @@ IntelbrasViewer/
   Player/                    CameraPlayer protocol and its KSPlayer implementation
   Panel/                     SwiftUI views: header, grid, enlarged view, forms
   Snapshots/                 file naming, 16:9 JPEG writer, snapshots folder
-IntelbrasViewerTests/        unit tests (XCTest)
+HomeViewTests/        unit tests (XCTest)
 Scripts/fake-rtsp-digest.py  fake RTSP server for testing logins without a DVR
 docs/                        spike notes and the manual verification checklist
 openspec/                    the change proposal, design, specs and tasks
@@ -197,7 +197,7 @@ project.yml                  XcodeGen project spec
 - `Scripts/fake-rtsp-digest.py 8554` starts a local server that answers like
   the DVR. Point the setup form at `127.0.0.1:8554`, with user `tester` and
   password `a@b:c/d#e`, to exercise the login check.
-- Logs: `/usr/bin/log stream --info --predicate 'subsystem == "com.carloseduardo.IntelbrasViewer"'`.
+- Logs: `/usr/bin/log stream --info --predicate 'subsystem == "com.carloseduardo.HomeView"'`.
 - Things that need the real DVR or the menu bar are covered by the manual
   checklist in [`docs/verificacao-manual.md`](docs/verificacao-manual.md).
   The results of the initial validation of KSPlayer against the DVR are in
@@ -225,11 +225,11 @@ project.yml                  XcodeGen project spec
 3. Remove the saved login and preferences:
 
    ```sh
-   security delete-generic-password -s com.carloseduardo.IntelbrasViewer
-   defaults delete com.carloseduardo.IntelbrasViewer
+   security delete-generic-password -s com.carloseduardo.HomeView
+   defaults delete com.carloseduardo.HomeView
    ```
 
-Snapshots stay in `~/Pictures/Intelbras Viewer` until you delete them.
+Snapshots stay in `~/Pictures/HomeView` until you delete them.
 
 ## License note
 

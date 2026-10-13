@@ -1,5 +1,5 @@
 import XCTest
-@testable import IntelbrasViewer
+@testable import HomeView
 
 final class PanelPlacementTests: XCTestCase {
     private let screen = NSRect(x: 0, y: 0, width: 1512, height: 944)

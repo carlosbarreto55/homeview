@@ -1,10 +1,10 @@
 import AppKit
 
-/// `~/Pictures/Intelbras Viewer`, where snapshots are saved.
+/// `~/Pictures/HomeView`, where snapshots are saved.
 enum SnapshotFolder {
     static var url: URL {
         FileManager.default.urls(for: .picturesDirectory, in: .userDomainMask)[0]
-            .appending(path: "Intelbras Viewer", directoryHint: .isDirectory)
+            .appending(path: "HomeView", directoryHint: .isDirectory)
     }
 
     /// Creates the folder when it does not exist yet.

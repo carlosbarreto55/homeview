@@ -1,7 +1,7 @@
 import ImageIO
 import UniformTypeIdentifiers
 import XCTest
-@testable import IntelbrasViewer
+@testable import HomeView
 
 final class SnapshotWriterTests: XCTestCase {
     private var root: URL!
@@ -10,7 +10,7 @@ final class SnapshotWriterTests: XCTestCase {
 
     override func setUpWithError() throws {
         root = FileManager.default.temporaryDirectory.appending(path: "SnapshotWriterTests-\(UUID().uuidString)")
-        writer = SnapshotWriter(folder: root.appending(path: "Intelbras Viewer"), timeZone: TimeZone(identifier: "UTC")!)
+        writer = SnapshotWriter(folder: root.appending(path: "HomeView"), timeZone: TimeZone(identifier: "UTC")!)
     }
 
     override func tearDownWithError() throws {

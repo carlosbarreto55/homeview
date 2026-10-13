@@ -1,5 +1,5 @@
 import XCTest
-@testable import IntelbrasViewer
+@testable import HomeView
 
 final class ConnectionStatusTests: XCTestCase {
     private let failed = StreamSession.State.failed(nextRetry: Date())

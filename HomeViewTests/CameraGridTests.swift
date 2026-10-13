@@ -1,5 +1,5 @@
 import XCTest
-@testable import IntelbrasViewer
+@testable import HomeView
 
 final class CameraGridTests: XCTestCase {
     func testEightCamerasScrollPast540Points() {

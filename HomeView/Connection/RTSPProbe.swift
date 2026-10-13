@@ -71,7 +71,7 @@ struct RTSPProbe {
         var lines = [
             "DESCRIBE \(uri) RTSP/1.0",
             "CSeq: \(sequence)",
-            "User-Agent: IntelbrasViewer",
+            "User-Agent: HomeView",
             "Accept: application/sdp",
         ]
         if let authorization {

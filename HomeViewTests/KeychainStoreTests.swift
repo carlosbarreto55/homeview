@@ -1,12 +1,12 @@
 import XCTest
-@testable import IntelbrasViewer
+@testable import HomeView
 
 final class KeychainStoreTests: XCTestCase {
     private var store: KeychainStore!
 
     override func setUp() {
         super.setUp()
-        store = KeychainStore(service: "com.carloseduardo.IntelbrasViewer.tests.\(UUID().uuidString)")
+        store = KeychainStore(service: "com.carloseduardo.HomeView.tests.\(UUID().uuidString)")
     }
 
     override func tearDown() {

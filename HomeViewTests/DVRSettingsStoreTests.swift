@@ -1,5 +1,5 @@
 import XCTest
-@testable import IntelbrasViewer
+@testable import HomeView
 
 final class DVRSettingsStoreTests: XCTestCase {
     private var suiteName: String!
@@ -8,7 +8,7 @@ final class DVRSettingsStoreTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        suiteName = "com.carloseduardo.IntelbrasViewer.tests.\(UUID().uuidString)"
+        suiteName = "com.carloseduardo.HomeView.tests.\(UUID().uuidString)"
         defaults = UserDefaults(suiteName: suiteName)
         store = DVRSettingsStore(defaults: defaults, keychain: KeychainStore(service: suiteName))
     }

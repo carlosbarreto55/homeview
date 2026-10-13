@@ -17,7 +17,7 @@ struct KeychainStore {
         let status: OSStatus
     }
 
-    static let defaultService = "com.carloseduardo.IntelbrasViewer"
+    static let defaultService = "com.carloseduardo.HomeView"
 
     var service = KeychainStore.defaultService
 

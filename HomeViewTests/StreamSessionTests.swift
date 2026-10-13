@@ -1,5 +1,5 @@
 import XCTest
-@testable import IntelbrasViewer
+@testable import HomeView
 
 @MainActor
 final class StreamSessionTests: XCTestCase {

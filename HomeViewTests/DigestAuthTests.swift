@@ -1,5 +1,5 @@
 import XCTest
-@testable import IntelbrasViewer
+@testable import HomeView
 
 final class DigestAuthTests: XCTestCase {
     // RFC 2617, section 3.5.

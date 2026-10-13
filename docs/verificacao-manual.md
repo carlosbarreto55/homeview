@@ -12,11 +12,11 @@ Antes de começar:
 
 - DVR em 192.168.1.2:554 com o usuário restrito `macApp` (só visualização ao
   vivo e reprodução). O nome do usuário diferencia maiúsculas de minúsculas.
-- Para começar do zero: `security delete-generic-password -s com.carloseduardo.IntelbrasViewer`
-  e `defaults delete com.carloseduardo.IntelbrasViewer`.
-- Para ver conexões RTSP abertas: `lsof -nP -iTCP:554 -a -c IntelbrasV`.
+- Para começar do zero: `security delete-generic-password -s com.carloseduardo.HomeView`
+  e `defaults delete com.carloseduardo.HomeView`.
+- Para ver conexões RTSP abertas: `lsof -nP -iTCP:554 -a -c HomeView`.
 - Para ver os logs do app:
-  `/usr/bin/log stream --info --predicate 'subsystem == "com.carloseduardo.IntelbrasViewer"'`.
+  `/usr/bin/log stream --info --predicate 'subsystem == "com.carloseduardo.HomeView"'`.
 
 Resultado da execução de `make test`: 2026-10-13 ✅ 132 testes, 0 falhas (6 de renderização pulados, como esperado).
 
@@ -56,7 +56,7 @@ Resultado da execução de `make test`: 2026-10-13 ✅ 132 testes, 0 falhas (6 d
   Resultado: 2026-10-13 ✅ (confirmado pelo usuário)
 - [x] **2.2 Senha errada.** Digite `macApp` e uma senha errada e aperte "Conectar".
   Esperado: o formulário continua aberto com "Usuário ou senha incorretos", e
-  nada é salvo (`security find-generic-password -s com.carloseduardo.IntelbrasViewer`
+  nada é salvo (`security find-generic-password -s com.carloseduardo.HomeView`
   não encontra nada). Faça no máximo uma ou duas tentativas: o DVR bloqueia o
   usuário depois de algumas falhas.
   Resultado: 2026-10-13 ✅ (confirmado pelo usuário)
@@ -65,7 +65,7 @@ Resultado da execução de `make test`: 2026-10-13 ✅ 132 testes, 0 falhas (6 d
   192.168.1.250:554", e nada é salvo.
   Resultado: 2026-10-13 ✅ (confirmado pelo usuário)
 - [x] **2.4 Acesso à rede local negado.** Em Ajustes do Sistema > Privacidade e
-  Segurança > Rede Local, desligue o Intelbras Viewer e aperte "Conectar".
+  Segurança > Rede Local, desligue o HomeView e aperte "Conectar".
   Religue depois.
   Esperado: "Permita o acesso à rede local em Ajustes do Sistema > Privacidade
   e Segurança > Rede Local".
@@ -77,10 +77,10 @@ Resultado da execução de `make test`: 2026-10-13 ✅ 132 testes, 0 falhas (6 d
   Esperado: o painel mostra a grade sem pedir usuário e senha.
   Resultado: 2026-10-13 ✅ (confirmado pelo usuário)
 - [x] **2.7 Senha fora das preferências e dos logs.** Rode
-  `defaults read com.carloseduardo.IntelbrasViewer` e veja os logs do app
+  `defaults read com.carloseduardo.HomeView` e veja os logs do app
   enquanto ele conecta.
   Esperado: a senha está no Keychain (Acesso às Chaves, item
-  "com.carloseduardo.IntelbrasViewer"), e não aparece nas preferências nem no
+  "com.carloseduardo.HomeView"), e não aparece nas preferências nem no
   log; os endereços nos logs não têm usuário nem senha.
   Resultado: 2026-10-13 ✅ (confirmado pelo usuário)
 - [x] **2.8 Trocar só a porta.** Em "Configurações do DVR", mude só a porta
@@ -129,7 +129,7 @@ Resultado da execução de `make test`: 2026-10-13 ✅ 132 testes, 0 falhas (6 d
   Esperado: a grade volta e as câmeras tocam de novo.
   Resultado: 2026-10-13 ✅ (confirmado pelo usuário)
 - [x] **3.5 Fechar o painel encerra as conexões.** Com a grade tocando, feche o
-  painel e rode `lsof -nP -iTCP:554 -a -c IntelbrasV` em até 1 segundo.
+  painel e rode `lsof -nP -iTCP:554 -a -c HomeView` em até 1 segundo.
   Esperado: nenhuma conexão com a porta 554.
   Resultado: 2026-10-13 ✅ (confirmado pelo usuário)
 - [x] **3.6 Reabrir numa câmera ampliada.** Amplie o canal 2, feche o painel e
@@ -183,18 +183,18 @@ Resultado da execução de `make test`: 2026-10-13 ✅ 132 testes, 0 falhas (6 d
 - [x] **5.2 Foto de uma câmera renomeada.** Com "Garagem" ampliada e tocando,
   aperte o botão de foto.
   Esperado: aparece "Foto salva" por uns 2 segundos; o arquivo
-  `~/Pictures/Intelbras Viewer/Garagem AAAA-MM-DD HH.MM.SS.jpg` existe, tem
+  `~/Pictures/HomeView/Garagem AAAA-MM-DD HH.MM.SS.jpg` existe, tem
   1920x1080 (`sips -g pixelWidth -g pixelHeight <arquivo>`) e mostra o que
   estava na tela.
   Resultado: 2026-10-13 ✅ (confirmado pelo usuário)
 - [x] **5.3 Nome com barra.** Renomeie uma câmera para "Sala/Cozinha" e tire uma foto.
   Esperado: o nome do arquivo começa com "Sala-Cozinha ".
   Resultado: 2026-10-13 ✅ (confirmado pelo usuário)
-- [x] **5.4 Pasta sem permissão.** Rode `chmod a-w ~/Pictures/"Intelbras Viewer"`,
-  tire uma foto e depois rode `chmod u+w ~/Pictures/"Intelbras Viewer"`.
+- [x] **5.4 Pasta sem permissão.** Rode `chmod a-w ~/Pictures/"HomeView"`,
+  tire uma foto e depois rode `chmod u+w ~/Pictures/"HomeView"`.
   Esperado: aparece "Não foi possível salvar a foto" e a câmera continua tocando.
   Resultado: 2026-10-13 ✅ (confirmado pelo usuário)
-- [x] **5.5 Abrir a pasta.** Apague `~/Pictures/Intelbras Viewer` (se estiver
+- [x] **5.5 Abrir a pasta.** Apague `~/Pictures/HomeView` (se estiver
   vazia) e aperte o botão de pasta no rodapé.
   Esperado: a pasta é criada e aparece numa janela do Finder.
   Resultado: 2026-10-13 ✅ (confirmado pelo usuário)
@@ -214,5 +214,5 @@ Resultado da execução de `make test`: 2026-10-13 ✅ 132 testes, 0 falhas (6 d
   Resultado: 2026-10-13 ✅ (confirmado pelo usuário)
 - [x] **6.4 Sair.** Com a grade tocando, escolha "Sair".
   Esperado: as conexões RTSP fecham, o ícone some da barra de menus e o
-  processo termina (`pgrep -x IntelbrasViewer` não mostra nada).
+  processo termina (`pgrep -x HomeView` não mostra nada).
   Resultado: 2026-10-13 ✅ (confirmado pelo usuário)

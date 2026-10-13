@@ -1,5 +1,5 @@
 import XCTest
-@testable import IntelbrasViewer
+@testable import HomeView
 
 @MainActor
 final class AppModelSnapshotTests: XCTestCase {
@@ -10,7 +10,7 @@ final class AppModelSnapshotTests: XCTestCase {
     private var players: [FakeCameraPlayer] = []
 
     override func setUp() async throws {
-        suiteName = "com.carloseduardo.IntelbrasViewer.tests.\(UUID().uuidString)"
+        suiteName = "com.carloseduardo.HomeView.tests.\(UUID().uuidString)"
         defaults = UserDefaults(suiteName: suiteName)
         settingsStore = DVRSettingsStore(defaults: defaults, keychain: KeychainStore(service: suiteName))
         try settingsStore.save(DVRSettings(host: "192.168.1.2", port: 554,
