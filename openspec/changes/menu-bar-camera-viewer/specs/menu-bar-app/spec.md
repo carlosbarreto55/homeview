@@ -8,11 +8,11 @@ The app SHALL appear only as an icon in the right side of the macOS menu bar, a 
 - **THEN** a camera icon appears in the menu bar, no Dock icon appears, and no window or panel opens
 
 ### Requirement: Floating panel
-Clicking the menu bar icon SHALL open a floating panel attached below the icon. The panel SHALL have a header with the title "Câmeras", a refresh button and a "…" menu button, a content area, and a footer with the connection status and a button that opens the snapshots folder. Clicking the icon again, clicking outside the panel, or pressing Esc SHALL close the panel.
+Clicking the menu bar icon SHALL open a floating panel below the icon, with the panel's top-left corner touching the icon's bottom-right corner; when the panel would not fit on the screen there, it SHALL move left only as far as needed to stay on screen. The panel SHALL have a header with the title "Câmeras", a refresh button and a "…" menu button, a content area, and a footer with the connection status and a button that opens the snapshots folder. Clicking the icon again, clicking outside the panel, or pressing Esc SHALL close the panel.
 
 #### Scenario: Opening the panel
 - **WHEN** the DVR is configured and the person clicks the menu bar icon
-- **THEN** the panel opens below the icon with the "Câmeras" header, the camera grid and the status footer
+- **THEN** the panel opens with its top-left corner at the icon's bottom-right corner, showing the "Câmeras" header, the camera grid and the status footer
 
 #### Scenario: Closing by clicking outside
 - **WHEN** the panel is open and the person clicks on the desktop

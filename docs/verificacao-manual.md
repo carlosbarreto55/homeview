@@ -27,7 +27,9 @@ Resultado da execução de `make test`: _(data, nº de testes, ✅/❌)_
   nada no Cmd+Tab, nenhuma janela abre sozinha.
   Resultado:
 - [ ] **1.2 Abrir o painel.** Com o DVR configurado, clique no ícone.
-  Esperado: o painel abre logo abaixo do ícone, com o cabeçalho "Câmeras",
+  Esperado: o canto superior esquerdo do painel encosta no canto inferior
+  direito do ícone (ou o painel encosta na borda direita da tela, se não
+  couber), com o cabeçalho "Câmeras",
   a grade e o rodapé com o status.
   Resultado:
 - [ ] **1.3 Fechar clicando no ícone.** Com o painel aberto, clique no ícone de novo.
