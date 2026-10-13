@@ -40,6 +40,10 @@ targets:
         INFOPLIST_KEY_LSUIElement: YES
         INFOPLIST_KEY_NSLocalNetworkUsageDescription: O Intelbras Viewer precisa acessar a rede local para mostrar as câmeras do seu DVR.
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.utilities
+        # FFmpegKit ships its macOS libraries as static archives inside
+        # iOS-style (shallow) frameworks. Xcode embeds them anyway and then
+        # rejects the layout; they hold no code needed at run time.
+        SKIP_EMBEDDED_FRAMEWORKS_VALIDATION: YES
 
   IntelbrasViewerTests:
     type: bundle.unit-test
