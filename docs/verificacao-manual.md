@@ -1,6 +1,6 @@
 # Verificação manual
 
-Cenários das especificações em `openspec/changes/menu-bar-camera-viewer/specs/`
+Cenários das especificações em `openspec/specs/`
 que precisam do DVR de verdade ou da barra de menus, e por isso não são
 cobertos pelos testes de unidade (`make test`).
 

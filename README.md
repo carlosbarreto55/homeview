@@ -203,7 +203,9 @@ project.yml                  XcodeGen project spec
   The results of the initial validation of KSPlayer against the DVR are in
   [`docs/spike-notes.md`](docs/spike-notes.md).
 - The work is planned with [OpenSpec](https://github.com/Fission-AI/OpenSpec):
-  see `openspec/changes/menu-bar-camera-viewer/`. Commits follow Conventional
+  the current specs are in `openspec/specs/`, and the first change (proposal,
+  design, tasks) is archived in
+  `openspec/changes/archive/2026-10-13-menu-bar-camera-viewer/`. Commits follow Conventional
   Commits.
 
 ## Privacy and security
