@@ -1,4 +1,5 @@
 import SwiftUI
+import os
 
 @main
 struct IntelbrasViewerApp: App {
@@ -25,5 +26,30 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             window.makeKeyAndOrderFront(nil)
             spikeWindow = window
         }
+        // Spike only: `-spikeTogglePanel N` presses the menu bar button N
+        // times, 6 s apart, opening and closing the real panel.
+        let toggles = UserDefaults.standard.integer(forKey: "spikeTogglePanel")
+        for index in 0..<toggles {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2 + 6 * Double(index)) {
+                Logger.panel.info("spike: pressing the menu bar button (\(index + 1)/\(toggles))")
+                Self.statusItemButton()?.performClick(nil)
+            }
+        }
+    }
+
+    private static func statusItemButton() -> NSButton? {
+        for window in NSApp.windows where String(describing: type(of: window)).contains("StatusBar") {
+            if let button = findButton(in: window.contentView) { return button }
+        }
+        return nil
+    }
+
+    private static func findButton(in view: NSView?) -> NSButton? {
+        guard let view else { return nil }
+        if let button = view as? NSButton { return button }
+        for subview in view.subviews {
+            if let button = findButton(in: subview) { return button }
+        }
+        return nil
     }
 }

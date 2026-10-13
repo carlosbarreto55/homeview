@@ -114,3 +114,33 @@ Run it again with:
     SPIKE_DVR_HOST=127.0.0.1 SPIKE_DVR_PORT=8554 SPIKE_DVR_USER=tester \
       SPIKE_DVR_PASSWORD='a@b:c/d#e' \
       DerivedData/Build/Products/Debug/IntelbrasViewer.app/Contents/MacOS/IntelbrasViewer -spikeWindow YES
+
+## 2.5 Starting and stopping streams from the panel's visibility (2026-10-13)
+
+Result: **occlusion notifications work for the MenuBarExtra window.**
+
+`PanelVisibilityObserver` (an `NSViewRepresentable` in the panel) observes
+`NSWindow.didChangeOcclusionStateNotification` on the panel's window and
+reports `occlusionState.contains(.visible)`; the spike starts all streams on
+visible and stops them on hidden. The panel was opened and closed 4 times by
+pressing the status item's button from code (`-spikeTogglePanel 4`, 8
+substreams), sampling RTSP connections with `lsof` every 0.25 s:
+
+| Event | Occlusion | Connections to :554 |
+| --- | --- | --- |
+| open 1 | visible after 65 ms | 8 (first frames ~4 s later) |
+| close 1 | hidden after 31 ms | 0 at the next sample (< 0.25 s) |
+| open 2 | visible after 40 ms | 8 |
+| close 2 | hidden after 23 ms | 0 at the next sample (< 0.25 s) |
+
+- Well within the spec's "all streams stop within 1 second".
+- When the window is first created the observer reports `hidden` and then,
+  30 ms later, `visible`: harmless (stopping nothing), but the model must
+  treat repeated or early `hidden` reports as no-ops.
+- `didBecomeKey` did not fire on the first open (the app had never been
+  active), so key status is not a reliable open signal; the
+  `didBecomeKey`/`didResignKey` fallback in design.md is not needed.
+- Not covered here, for the manual checklist (7.1): a real mouse click on the
+  icon, closing by clicking outside the panel, and Esc. Pressing the button
+  from code goes through the same toggle, but focus behaves differently with
+  a real click.

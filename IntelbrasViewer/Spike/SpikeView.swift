@@ -43,6 +43,10 @@ final class SpikeModel {
 /// Launch arguments: `-spikeAll YES` plays the 8 substreams in a grid;
 /// otherwise `-spikeChannel N` (default 1) and `-spikeSubtype S` (default 1).
 struct SpikeView: View {
+    /// In the panel, streams follow the panel's visibility; in the spike
+    /// window they start when the view appears.
+    var followsPanelVisibility = false
+
     @State private var models: [SpikeModel] = {
         let defaults = UserDefaults.standard
         if defaults.bool(forKey: "spikeAll") {
@@ -63,7 +67,15 @@ struct SpikeView: View {
             .padding(12)
         }
         .frame(width: 600, height: models.count > 1 ? 540 : 400)
-        .onAppear { models.forEach { $0.start() } }
+        .background {
+            if followsPanelVisibility {
+                PanelVisibilityObserver { visible in
+                    Logger.panel.info("panel \(visible ? "visible, starting" : "hidden, stopping", privacy: .public) streams")
+                    models.forEach { visible ? $0.start() : $0.stop() }
+                }
+            }
+        }
+        .onAppear { if !followsPanelVisibility { models.forEach { $0.start() } } }
     }
 }
 
