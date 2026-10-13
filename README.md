@@ -116,9 +116,9 @@ Things to know:
 - **User names are case-sensitive.** `macApp` and `macapp` are different
   users; a wrong case looks exactly like a wrong password.
 - **The DVR locks a user after a few failed logins** (Dahua-based firmware
-  usually locks it for about 30 minutes after about 5 failures). The app is careful about this: it
-  checks the login once before starting any stream and stops retrying as soon
-  as the DVR rejects the password, so a changed password costs one failed
+  usually locks it for about 30 minutes after about 5 failures). The app is
+  careful about this: it checks the login once before starting any stream and
+  stops retrying as soon as the DVR rejects the password, so a changed password costs one failed
   attempt, not one per camera. Avoid retrying a wrong password by hand.
 - A restricted user cannot read the DVR's channel names or settings, which is
   why camera names are set inside the app ("…" › Renomear câmeras).
