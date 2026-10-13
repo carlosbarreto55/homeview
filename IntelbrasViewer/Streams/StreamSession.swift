@@ -18,7 +18,10 @@ final class StreamSession: Identifiable {
     let channel: Int
     let stream: StreamURL
     @ObservationIgnored let player: CameraPlayer
-    private(set) var state: State = .stopped
+    private(set) var state: State = .stopped {
+        didSet { if state != oldValue { onStateChange?(state) } }
+    }
+    @ObservationIgnored var onStateChange: ((State) -> Void)?
 
     @ObservationIgnored private var retryPolicy: RetryPolicy
     @ObservationIgnored private let scheduler: RetryScheduler

@@ -46,7 +46,7 @@ Setup must tell "wrong password" from "DVR not found" from "local network denied
 - timeout / refused / host unreachable → not found;
 - path unsatisfied with reason `localNetworkDenied` → local network denied.
 
-The probe is used by "Conectar"/"Salvar", and again when every tile has failed, to choose the footer message. Digest computation and response classification are pure functions with unit tests.
+The probe is used by "Conectar"/"Salvar"; before streams start from cold (the panel opens, or refresh with no streams running), so that a password changed on the DVR costs one failed login instead of one per tile (only "wrong credentials" keeps the streams from starting; an unreachable DVR still starts them so tiles show "Sem sinal" and retry); and again when every tile has failed, to choose the footer message. Switching between the grid and the enlarged view does not probe again. Digest computation and response classification are pure functions with unit tests.
 
 ### 6. Credentials in URLs
 `StreamURL` builds `rtsp://user:password@HOST:PORT/cam/realmonitor?channel=N&subtype=S`, percent-encoding the user and password with only RFC 3986 unreserved characters left as-is. The URL lives only in memory and is never logged; logs show `rtsp://HOST:PORT/…channel=N&subtype=S` without credentials. The spike verifies that FFmpeg decodes percent-encoded credentials (see Risks).

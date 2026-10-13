@@ -4,10 +4,10 @@ Findings from tasks 2.1–2.6 of the `menu-bar-camera-viewer` change. DVR:
 Intelbras MHDX 1108-C at 192.168.1.2:554. Mac: macOS 26.6, Xcode 27, KSPlayer
 2.3.4 with FFmpegKit 6.1.4.
 
-How to run the spike: `make build`, then `Scripts/spike-run.sh -spikeWindow YES`
-(optionally `-spikeChannel N -spikeSubtype S`; `SPIKE_FFMPEG_LOG=1` prints
-FFmpeg's log to stderr with the password removed). App logs:
-`/usr/bin/log stream --info --predicate 'subsystem == "com.carloseduardo.IntelbrasViewer"'`.
+The spike code (`IntelbrasViewer/Spike`, `Scripts/spike-run.sh` and the
+`-spike…` launch arguments) was removed when the real panel replaced it in task
+5.1; it is in the history up to commit `6ee373d`. `Scripts/fake-rtsp-digest.py`
+is still useful: point the setup form at `127.0.0.1:8554`.
 
 ## 2.1 Channel 1 substream through KSPlayer (2026-10-13)
 

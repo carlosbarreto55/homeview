@@ -1,0 +1,236 @@
+import Foundation
+import Observation
+import os
+
+/// What the panel shows, which streams run, and the footer status.
+@MainActor
+@Observable
+final class AppModel {
+    enum Route: Equatable {
+        /// Reading the saved settings (the Keychain can be slow to answer).
+        case loading
+        case setup
+        case grid
+        case enlarged(channel: Int)
+        case dvrSettings
+        case renameCameras
+
+        var hasStreams: Bool {
+            switch self {
+            case .grid, .enlarged: true
+            default: false
+            }
+        }
+    }
+
+    typealias Probe = (DVRSettings) async -> RTSPProbe.Result
+
+    private(set) var route: Route = .loading
+    private(set) var settings: DVRSettings?
+    let cameras: CameraListStore
+    /// The streams of the current view, one per tile.
+    private(set) var sessions: [StreamSession] = []
+    /// The last probe's answer since streams last played; `nil` when none.
+    private(set) var lastProbe: RTSPProbe.Result?
+    /// Checking the login before starting streams.
+    private(set) var isVerifying = false
+    private(set) var isPanelVisible = false
+
+    @ObservationIgnored private let settingsStore: DVRSettingsStore
+    @ObservationIgnored private let probe: Probe
+    @ObservationIgnored private let makePlayer: @MainActor () -> CameraPlayer
+    @ObservationIgnored private var loadTask: Task<Void, Never>?
+    @ObservationIgnored private var probeTask: Task<Void, Never>?
+    /// Where "Cancelar" in a form goes back to.
+    @ObservationIgnored private var routeBeforeForm: Route = .grid
+
+    init(
+        settingsStore: DVRSettingsStore = DVRSettingsStore(),
+        cameras: CameraListStore = CameraListStore(),
+        probe: @escaping Probe = { settings in
+            await RTSPProbe().check(host: settings.host, port: settings.port,
+                                    user: settings.credentials.user, password: settings.credentials.password)
+        },
+        makePlayer: @escaping @MainActor () -> CameraPlayer
+    ) {
+        self.settingsStore = settingsStore
+        self.cameras = cameras
+        self.probe = probe
+        self.makePlayer = makePlayer
+    }
+
+    var status: ConnectionStatus {
+        guard isPanelVisible, route.hasStreams else { return .idle }
+        if isVerifying { return .connecting }
+        if sessions.isEmpty, lastProbe == .wrongCredentials { return .wrongCredentials }
+        return ConnectionStatus.derive(sessions: sessions.map(\.state), lastProbe: lastProbe)
+    }
+
+    func session(channel: Int) -> StreamSession? {
+        sessions.first { $0.channel == channel }
+    }
+
+    // MARK: Panel
+
+    func panelVisibilityChanged(_ visible: Bool) {
+        guard visible != isPanelVisible else { return }
+        isPanelVisible = visible
+        Logger.panel.info("panel \(visible ? "visible" : "hidden", privacy: .public)")
+        if visible {
+            if route == .loading {
+                loadSettings()
+            } else {
+                startStreams(verify: true)
+            }
+        } else {
+            stopStreams()
+        }
+    }
+
+    // MARK: Navigation
+
+    func openCamera(channel: Int) {
+        route = .enlarged(channel: channel)
+        startStreams(verify: false)
+    }
+
+    func backToGrid() {
+        route = .grid
+        startStreams(verify: false)
+    }
+
+    func openDVRSettings() {
+        openForm(.dvrSettings)
+    }
+
+    func openRenameCameras() {
+        openForm(.renameCameras)
+    }
+
+    /// "Cancelar" (or "Concluído") in a form: back to the view it was opened from.
+    func closeForm() {
+        var previous = routeBeforeForm
+        if case .enlarged(let channel) = previous, cameras.camera(channel: channel)?.isVisible != true {
+            previous = .grid
+        }
+        route = settings == nil ? .setup : previous
+        startStreams(verify: false)
+    }
+
+    /// The header's refresh button: every stream restarts now, with the shortest wait.
+    func refresh() {
+        guard route.hasStreams else { return }
+        if sessions.isEmpty {
+            startStreams(verify: true)
+        } else {
+            lastProbe = nil
+            sessions.forEach { $0.restart() }
+        }
+    }
+
+    /// Stops everything (quitting).
+    func stopAll() {
+        stopStreams()
+    }
+
+    // MARK: Streams
+
+    private func openForm(_ form: Route) {
+        if route.hasStreams { routeBeforeForm = route }
+        stopStreams()
+        route = form
+    }
+
+    private func loadSettings() {
+        let store = settingsStore
+        loadTask = Task {
+            let loaded = await Task.detached { try? store.load() }.value
+            settings = loaded
+            route = loaded == nil ? .setup : .grid
+            startStreams(verify: true)
+        }
+    }
+
+    private func startStreams(verify: Bool) {
+        stopStreams()
+        guard isPanelVisible, route.hasStreams, let settings, !streams(settings: settings).isEmpty else { return }
+        lastProbe = nil
+        guard verify else {
+            play(streams(settings: settings))
+            return
+        }
+        // One login check first: 8 streams with a rejected password would be
+        // 8 failed logins, enough for the DVR to lock the user.
+        isVerifying = true
+        probeTask = Task {
+            let result = await probe(settings)
+            probeTask = nil
+            guard !Task.isCancelled else { return }
+            isVerifying = false
+            if result == .wrongCredentials {
+                lastProbe = .wrongCredentials
+                Logger.panel.error("login rejected; streams not started")
+            } else {
+                play(streams(settings: settings))
+            }
+        }
+    }
+
+    private func play(_ streams: [StreamURL]) {
+        sessions = streams.map { stream in
+            let session = StreamSession(stream: stream, player: makePlayer())
+            session.onStateChange = { [weak self] _ in self?.sessionsChanged() }
+            return session
+        }
+        sessions.forEach { $0.start() }
+    }
+
+    private func stopStreams() {
+        probeTask?.cancel()
+        probeTask = nil
+        isVerifying = false
+        sessions.forEach { $0.stop() }
+        sessions = []
+    }
+
+    /// The streams the current view shows.
+    private func streams(settings: DVRSettings) -> [StreamURL] {
+        switch route {
+        case .grid:
+            cameras.visibleCameras.map { settings.streamURL(channel: $0.channel, quality: .substream) }
+        case .enlarged(let channel):
+            [settings.streamURL(channel: channel, quality: .main)]
+        default:
+            []
+        }
+    }
+
+    /// When every stream has failed, asks the probe why, once.
+    private func sessionsChanged() {
+        let states = sessions.map(\.state)
+        if states.contains(.playing) {
+            lastProbe = nil
+            return
+        }
+        let allFailed = !states.isEmpty && states.allSatisfy { if case .failed = $0 { true } else { false } }
+        guard allFailed, lastProbe == nil, probeTask == nil, let settings else { return }
+        probeTask = Task {
+            let result = await probe(settings)
+            probeTask = nil
+            guard !Task.isCancelled, !sessions.isEmpty else { return }
+            lastProbe = result
+            if result == .wrongCredentials {
+                Logger.panel.error("login rejected; streams stop retrying")
+                sessions.forEach { $0.suspendRetries() }
+            }
+        }
+    }
+
+    // MARK: Testing
+
+    /// Waits for loading and probing started so far (for tests).
+    func settle() async {
+        await loadTask?.value
+        await probeTask?.value
+    }
+}
