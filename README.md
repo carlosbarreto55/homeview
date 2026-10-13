@@ -1,4 +1,4 @@
-# Intelbras Viewer
+# Camera Viewer
 
 A small macOS menu bar app for watching the cameras DVR on
 the local network, without official apps or their cloud.
