@@ -42,6 +42,7 @@ final class PanelRenderTests: XCTestCase {
         }
         let model = AppModel(settingsStore: settingsStore, cameras: CameraListStore(defaults: defaults),
                              probe: { [unowned self] _ in probeResult },
+                             loginItem: FakeLoginItem(),
                              makePlayer: { [unowned self] in
                                  let player = FakeCameraPlayer()
                                  players.append(player)

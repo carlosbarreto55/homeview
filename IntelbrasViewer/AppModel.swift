@@ -1,4 +1,4 @@
-import Foundation
+import AppKit
 import Observation
 import os
 
@@ -35,10 +35,13 @@ final class AppModel {
     /// Checking the login before starting streams.
     private(set) var isVerifying = false
     private(set) var isPanelVisible = false
+    /// "Abrir ao iniciar o Mac", as macOS last reported it.
+    private(set) var opensAtLogin = false
 
     @ObservationIgnored private let settingsStore: DVRSettingsStore
     @ObservationIgnored private let probe: Probe
     @ObservationIgnored private let makePlayer: @MainActor () -> CameraPlayer
+    @ObservationIgnored private let loginItem: LoginItem
     @ObservationIgnored private var loadTask: Task<Void, Never>?
     @ObservationIgnored private var probeTask: Task<Void, Never>?
     /// Where "Cancelar" in a form goes back to.
@@ -51,11 +54,13 @@ final class AppModel {
             await RTSPProbe().check(host: settings.host, port: settings.port,
                                     user: settings.credentials.user, password: settings.credentials.password)
         },
+        loginItem: LoginItem? = nil,
         makePlayer: @escaping @MainActor () -> CameraPlayer
     ) {
         self.settingsStore = settingsStore
         self.cameras = cameras
         self.probe = probe
+        self.loginItem = loginItem ?? MainAppLoginItem()
         self.makePlayer = makePlayer
     }
 
@@ -77,6 +82,7 @@ final class AppModel {
         isPanelVisible = visible
         Logger.panel.info("panel \(visible ? "visible" : "hidden", privacy: .public)")
         if visible {
+            refreshLoginItem()
             if route == .loading {
                 loadSettings()
             } else {
@@ -212,9 +218,26 @@ final class AppModel {
         }
     }
 
-    /// Stops everything (quitting).
-    func stopAll() {
+    /// "Sair": stops every stream, then quits.
+    func quit() {
         stopStreams()
+        NSApplication.shared.terminate(nil)
+    }
+
+    // MARK: Open at login
+
+    /// Reads the login item state from macOS again.
+    func refreshLoginItem() {
+        opensAtLogin = loginItem.isEnabled
+    }
+
+    func setOpensAtLogin(_ enabled: Bool) {
+        do {
+            try loginItem.setEnabled(enabled)
+        } catch {
+            Logger.panel.error("login item: \(error.localizedDescription, privacy: .public)")
+        }
+        refreshLoginItem()
     }
 
     // MARK: Streams

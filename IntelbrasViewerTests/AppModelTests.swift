@@ -9,6 +9,7 @@ final class AppModelTests: XCTestCase {
     private var players: [FakeCameraPlayer] = []
     private var probeResult = RTSPProbe.Result.ok
     private var probeCount = 0
+    private var loginItem = FakeLoginItem()
 
     private let settings = DVRSettings(host: "192.168.1.2", port: 554,
                                        credentials: Credentials(user: "macApp", password: "secret"))
@@ -36,6 +37,7 @@ final class AppModelTests: XCTestCase {
                 probeCount += 1
                 return probeResult
             },
+            loginItem: loginItem,
             makePlayer: { [unowned self] in
                 let player = FakeCameraPlayer()
                 players.append(player)
@@ -223,6 +225,39 @@ final class AppModelTests: XCTestCase {
         XCTAssertEqual(model.route, .grid)
     }
 
+    func testOpenAtLoginIsOffAtFirst() async throws {
+        let model = try makeModel()
+        await open(model)
+        XCTAssertFalse(model.opensAtLogin)
+    }
+
+    func testTurningOpenAtLoginOnAndOff() async throws {
+        let model = try makeModel()
+        await open(model)
+        model.setOpensAtLogin(true)
+        XCTAssertTrue(loginItem.isEnabled)
+        XCTAssertTrue(model.opensAtLogin)
+        model.setOpensAtLogin(false)
+        XCTAssertFalse(model.opensAtLogin)
+    }
+
+    func testCheckmarkFollowsChangesMadeInSystemSettings() async throws {
+        let model = try makeModel()
+        await open(model)
+        model.setOpensAtLogin(true)
+        loginItem.isEnabled = false // removed under General > Login Items
+        model.refreshLoginItem()
+        XCTAssertFalse(model.opensAtLogin)
+    }
+
+    func testFailedRegistrationShowsTheRealState() async throws {
+        let model = try makeModel()
+        await open(model)
+        loginItem.error = CocoaError(.featureUnsupported)
+        model.setOpensAtLogin(true)
+        XCTAssertFalse(model.opensAtLogin)
+    }
+
     func testClosingAFormOnAHiddenCameraGoesToTheGrid() async throws {
         let model = try makeModel()
         await open(model)
@@ -244,6 +279,7 @@ final class AppModelSetupTests: XCTestCase {
     private var players: [FakeCameraPlayer] = []
     private var probeResult = RTSPProbe.Result.ok
     private var probed: [DVRSettings] = []
+    private var loginItem = FakeLoginItem()
 
     override func setUp() async throws {
         suiteName = "com.carloseduardo.IntelbrasViewer.tests.\(UUID().uuidString)"
@@ -265,6 +301,7 @@ final class AppModelSetupTests: XCTestCase {
                 probed.append(settings)
                 return probeResult
             },
+            loginItem: loginItem,
             makePlayer: { [unowned self] in
                 let player = FakeCameraPlayer()
                 players.append(player)

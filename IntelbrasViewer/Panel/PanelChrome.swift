@@ -56,12 +56,22 @@ struct PanelMenu: View {
                 .disabled(model.settings == nil)
             Button("Configurações do DVR") { model.openDVRSettings() }
                 .disabled(model.settings == nil)
+            Toggle("Abrir ao iniciar o Mac", isOn: Binding(
+                get: { model.opensAtLogin },
+                set: { model.setOpensAtLogin($0) }
+            ))
+            Divider()
+            Button("Sair") { model.quit() }
         } label: {
             Image(systemName: "ellipsis.circle")
         }
         .menuIndicator(.hidden)
         .fixedSize()
         .help("Mais opções")
+        // The checkmark follows macOS, including changes made in System Settings.
+        .onReceive(NotificationCenter.default.publisher(for: NSMenu.didBeginTrackingNotification)) { _ in
+            model.refreshLoginItem()
+        }
     }
 }
 

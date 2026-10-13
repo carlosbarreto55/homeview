@@ -61,3 +61,14 @@ final class FakeRetryScheduler: RetryScheduler {
         }
     }
 }
+
+@MainActor
+final class FakeLoginItem: LoginItem {
+    var isEnabled = false
+    var error: Error?
+
+    func setEnabled(_ enabled: Bool) throws {
+        if let error { throw error }
+        isEnabled = enabled
+    }
+}
