@@ -20,6 +20,19 @@ struct EnlargedCameraView: View {
             ChannelBadge(channel: channel)
                 .padding(8)
         }
+        .overlay(alignment: .bottom) {
+            if let message = model.snapshotMessage {
+                Label(message.text, systemImage: message == .saved ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
+                    .font(.callout.weight(.medium))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(.black.opacity(0.7), in: Capsule())
+                    .padding(.bottom, 12)
+                    .transition(.opacity)
+            }
+        }
+        .animation(.easeInOut(duration: 0.2), value: model.snapshotMessage)
         .clipShape(RoundedRectangle(cornerRadius: 6))
         .padding(12)
     }

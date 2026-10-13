@@ -37,11 +37,30 @@ final class AppModel {
     private(set) var isPanelVisible = false
     /// "Abrir ao iniciar o Mac", as macOS last reported it.
     private(set) var opensAtLogin = false
+    /// The enlarged camera has shown its first frame.
+    private(set) var canTakeSnapshot = false
+    private(set) var snapshotMessage: SnapshotMessage?
+
+    enum SnapshotMessage: Equatable {
+        case saved
+        case failed
+
+        var text: String {
+            switch self {
+            case .saved: "Foto salva"
+            case .failed: "Não foi possível salvar a foto"
+            }
+        }
+    }
 
     @ObservationIgnored private let settingsStore: DVRSettingsStore
     @ObservationIgnored private let probe: Probe
     @ObservationIgnored private let makePlayer: @MainActor () -> CameraPlayer
     @ObservationIgnored private let loginItem: LoginItem
+    @ObservationIgnored private let snapshotWriter: SnapshotWriter
+    @ObservationIgnored var snapshotMessageDuration: Duration = .seconds(2)
+    @ObservationIgnored private var frameWatchTask: Task<Void, Never>?
+    @ObservationIgnored private var messageTask: Task<Void, Never>?
     @ObservationIgnored private var loadTask: Task<Void, Never>?
     @ObservationIgnored private var probeTask: Task<Void, Never>?
     /// Where "Cancelar" in a form goes back to.
@@ -55,12 +74,14 @@ final class AppModel {
                                     user: settings.credentials.user, password: settings.credentials.password)
         },
         loginItem: LoginItem? = nil,
+        snapshotWriter: SnapshotWriter = SnapshotWriter(),
         makePlayer: @escaping @MainActor () -> CameraPlayer
     ) {
         self.settingsStore = settingsStore
         self.cameras = cameras
         self.probe = probe
         self.loginItem = loginItem ?? MainAppLoginItem()
+        self.snapshotWriter = snapshotWriter
         self.makePlayer = makePlayer
     }
 
@@ -224,6 +245,59 @@ final class AppModel {
         NSApplication.shared.terminate(nil)
     }
 
+    // MARK: Snapshots
+
+    /// The snapshot button: saves what the enlarged camera shows.
+    func takeSnapshot() async {
+        guard canTakeSnapshot, case .enlarged(let channel) = route, let session = session(channel: channel) else {
+            return
+        }
+        let name = cameras.camera(channel: channel)?.name ?? Camera.defaultName(channel: channel)
+        switch await snapshotWriter.save(from: session.player, cameraName: name) {
+        case .success(let url):
+            Logger.panel.info("snapshot saved: \(url.lastPathComponent, privacy: .public)")
+            show(.saved)
+        case .failure(let failure):
+            Logger.panel.error("snapshot failed: \(String(describing: failure), privacy: .public)")
+            show(.failed)
+        }
+    }
+
+    private func show(_ message: SnapshotMessage) {
+        messageTask?.cancel()
+        snapshotMessage = message
+        let duration = snapshotMessageDuration
+        messageTask = Task {
+            try? await Task.sleep(for: duration)
+            guard !Task.isCancelled else { return }
+            snapshotMessage = nil
+        }
+    }
+
+    /// Enables the snapshot button once the enlarged camera has a frame
+    /// (the player has none until the first one is shown).
+    private func updateSnapshotAvailability() {
+        guard case .enlarged(let channel) = route, let session = session(channel: channel),
+              session.state == .playing
+        else {
+            frameWatchTask?.cancel()
+            frameWatchTask = nil
+            canTakeSnapshot = false
+            return
+        }
+        guard !canTakeSnapshot, frameWatchTask == nil else { return }
+        frameWatchTask = Task {
+            while !Task.isCancelled {
+                if await session.player.currentFrame() != nil {
+                    canTakeSnapshot = true
+                    break
+                }
+                try? await Task.sleep(for: .milliseconds(250))
+            }
+            frameWatchTask = nil
+        }
+    }
+
     // MARK: Open at login
 
     /// Reads the login item state from macOS again.
@@ -295,6 +369,9 @@ final class AppModel {
     private func stopStreams() {
         probeTask?.cancel()
         probeTask = nil
+        frameWatchTask?.cancel()
+        frameWatchTask = nil
+        canTakeSnapshot = false
         isVerifying = false
         sessions.forEach { $0.stop() }
         sessions = []
@@ -314,6 +391,7 @@ final class AppModel {
 
     /// When every stream has failed, asks the probe why, once.
     private func sessionsChanged() {
+        updateSnapshotAvailability()
         let states = sessions.map(\.state)
         if states.contains(.playing) {
             lastProbe = nil
@@ -339,5 +417,6 @@ final class AppModel {
     func settle() async {
         await loadTask?.value
         await probeTask?.value
+        await frameWatchTask?.value
     }
 }

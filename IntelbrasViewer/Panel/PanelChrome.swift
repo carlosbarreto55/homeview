@@ -7,6 +7,15 @@ struct PanelHeader: View {
         HStack(spacing: 8) {
             title
             Spacer(minLength: 8)
+            if case .enlarged = model.route {
+                Button {
+                    Task { await model.takeSnapshot() }
+                } label: {
+                    Image(systemName: "camera")
+                }
+                .disabled(!model.canTakeSnapshot)
+                .help("Tirar foto")
+            }
             if model.route.hasStreams {
                 Button {
                     model.refresh()
