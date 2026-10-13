@@ -50,6 +50,13 @@ struct PanelVisibilityObserver: NSViewRepresentable {
             ) { [weak self] _ in
                 MainActor.assumeIsolated { self?.report() }
             })
+            // MenuBarExtra centers the panel under the icon each time it opens
+            // or changes size; put it back where it belongs.
+            for name in [NSWindow.didMoveNotification, NSWindow.didResizeNotification] {
+                observations.append(center.addObserver(forName: name, object: window, queue: .main) { [weak self] _ in
+                    MainActor.assumeIsolated { self?.placeWindow() }
+                })
+            }
             report()
         }
 
@@ -79,8 +86,21 @@ struct PanelVisibilityObserver: NSViewRepresentable {
             keyMonitor = nil
         }
 
+        /// Top-left corner at the menu bar icon's bottom-right corner.
+        private func placeWindow() {
+            guard let window, let icon = MenuBarPanel.iconFrame(),
+                  let screen = window.screen ?? NSScreen.main
+            else { return }
+            let origin = MenuBarPanel.panelOrigin(panelSize: window.frame.size, iconFrame: icon,
+                                                  screenFrame: screen.visibleFrame)
+            if window.frame.origin != origin {
+                window.setFrameOrigin(origin)
+            }
+        }
+
         private func report() {
             guard let window else { return }
+            placeWindow()
             let visible = window.occlusionState.contains(.visible)
             Logger.panel.info("occlusion visible=\(visible)")
             guard visible != isVisible else { return }
